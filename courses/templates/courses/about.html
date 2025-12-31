@@ -1,6 +1,23 @@
 {% extends 'courses/base.html' %}
 
 {% block content %}
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="breadcrumb-nav">
+            <a href="/" class="crumb">
+                <span>🏠</span>
+                <span>Trang chủ</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <div class="crumb current">
+                <span>📖</span>
+                <span>Giới thiệu</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- About Page -->
 <div class="about-page">
     <!-- Hero Section -->
@@ -13,7 +30,7 @@
                         Nơi biến đam mê công nghệ thành kỹ năng thực tế, 
                         giúp bạn xây dựng sự nghiệp lập trình vững chắc.
                     </p>
-                    <a href="courses/templates/courses/course_list.html" class="hero-button">
+                    <a href="/courses/" class="hero-button">
                         <span>🎯</span>
                         <span>Khám phá khóa học</span>
                     </a>
@@ -178,8 +195,8 @@
     --accent: #3b82f6;
     --accent-2: #6366f1;
     --success: #10b981;
-    --warning: #f59e0b;
     --danger: #ef4444;
+    --warning: #f59e0b;
     --text: #1e293b;
     --muted: #64748b;
     --light: #f8fafc;
@@ -187,6 +204,77 @@
     --shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     --radius: 16px;
     --transition: all 0.3s ease;
+}
+
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-optimized .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .breadcrumb-nav {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.crumb:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.crumb.current {
+    color: var(--text);
+    font-weight: 600;
+    cursor: default;
+    background: #f8fafc;
+}
+
+.crumb-separator {
+    color: var(--muted);
 }
 
 /* About Page */
@@ -229,6 +317,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    margin-top: 2rem;
 }
 
 .hero-title {
@@ -616,6 +705,21 @@
         max-width: 300px;
         justify-content: center;
     }
+    
+    /* Responsive breadcrumb */
+    .breadcrumb-nav {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: none;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -669,23 +773,18 @@ document.addEventListener('DOMContentLoaded', function() {
     counters.forEach(counter => {
         observer.observe(counter);
     });
-    
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80,
-                    behavior: 'smooth'
-                });
+
+    // Sticky breadcrumb effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
             }
         });
-    });
+    }
 });
 </script>
 {% endblock %}

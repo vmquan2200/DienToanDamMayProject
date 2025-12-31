@@ -1,6 +1,23 @@
 {% extends 'courses/base.html' %}
 
 {% block content %}
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="search-breadcrumb">
+            <a href="/" class="crumb">
+                <span>🏠</span>
+                <span>Trang chủ</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <div class="crumb current">
+                <span>🔍</span>
+                <span>Tìm kiếm: {{ query|truncatechars:20 }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="search-results-container">
     <!-- Search Header -->
     <div class="search-header">
@@ -329,16 +346,119 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.search-results-container {
+/* Breadcrumb Styles */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-optimized .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 0 20px;
+}
+
+.search-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .search-breadcrumb {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.crumb:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.crumb.current {
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: default;
+    background: #f8fafc;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.crumb-separator {
+    color: var(--text-secondary);
+    padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+    .search-breadcrumb {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: inline-block;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .crumb.current span:last-child {
+        max-width: 100px;
+    }
+}
+
+/* Main Container */
+.search-results-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 /* Search Header */
 .search-header {
     text-align: center;
     margin-bottom: 3rem;
+    margin-top: 1rem;
 }
 
 .search-header h1 {
@@ -371,6 +491,10 @@
     font-weight: 600;
     color: var(--text-primary);
     font-size: 1.1em;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .search-stats {
@@ -444,8 +568,8 @@
 
 /* Did You Mean */
 .did-you-mean {
-    background: var(--warning-light);
-    border: 1px solid var(--warning);
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
     border-radius: var(--radius);
     padding: 1.25rem;
     margin-bottom: 2rem;
@@ -1031,6 +1155,15 @@
         --bg-light: #0f172a;
     }
     
+    .breadcrumb-optimized {
+        background: rgba(30, 41, 59, 0.95);
+    }
+    
+    .search-breadcrumb {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
     .results-filters {
         background: #1e293b;
     }
@@ -1065,6 +1198,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Breadcrumb sticky effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+    }
+    
     // Initialize filters
     const categoryFilter = document.getElementById('category-filter');
     const priceFilter = document.getElementById('price-filter');

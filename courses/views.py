@@ -63,10 +63,18 @@ def course_detail(request, course_id):
     return render(request, 'courses/course_detail.html', {'course': course})
 
 
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Course, Cart
+
 @login_required
-# Thêm khóa học vào giỏ
 def add_to_cart(request, course_id):
     course = get_object_or_404(Course, id=course_id)
+    
+    # Kiểm tra xem request có phải AJAX không
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     
     # Kiểm tra nếu khóa học đã có trong giỏ
     cart_item, created = Cart.objects.get_or_create(
@@ -74,12 +82,28 @@ def add_to_cart(request, course_id):
         course=course
     )
     
-    if created:
-        messages.success(request, f'Đã thêm "{course.title}" vào giỏ hàng!')
+    if is_ajax:
+        # Nếu là AJAX request, trả về JSON
+        if created:
+            return JsonResponse({
+                'success': True,
+                'message': f'Đã thêm "{course.title}" vào giỏ hàng!',
+                'cart_count': Cart.objects.filter(user=request.user).count()
+            })
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': f'"{course.title}" đã có trong giỏ hàng!',
+                'cart_count': Cart.objects.filter(user=request.user).count()
+            })
     else:
-        messages.info(request, f'"{course.title}" đã có trong giỏ hàng!')
-    
-    return redirect('course_list')
+        # Nếu là request bình thường, giữ nguyên logic cũ
+        if created:
+            messages.success(request, f'Đã thêm "{course.title}" vào giỏ hàng!')
+        else:
+            messages.info(request, f'"{course.title}" đã có trong giỏ hàng!')
+        
+        return redirect('course_list')
 
 @login_required
 # Xem giỏ hàng

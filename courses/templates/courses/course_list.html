@@ -138,13 +138,20 @@
                         
                         <div class="course-actions">
                             <!-- Nút Thêm giỏ hàng -->
-                            <form action="{% if user.is_authenticated %}{% url 'add_to_cart' course.id %}{% else %}{% url 'login' %}{% endif %}" method="post" class="action-form">
+                            {% if user.is_authenticated %}
+                            <form action="{% url 'add_to_cart' course.id %}" method="post" class="action-form" data-ajax="add-to-cart">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-cart">
                                     <span class="btn-icon">🛒</span>
                                     <span class="btn-text">Thêm vào giỏ hàng</span>
                                 </button>
                             </form>
+                            {% else %}
+                            <a href="{% url 'account_login' %}?next={{ request.get_full_path }}" class="btn-cart">
+                                <span class="btn-icon">🛒</span>
+                                <span class="btn-text">Thêm vào giỏ hàng</span>
+                            </a>
+                            {% endif %}
                             
                             <!-- Nút Mua ngay -->
                             <a href="{% if user.is_authenticated %}{% url 'checkout_direct' course.id %}{% else %}{% url 'login' %}?next={% url 'checkout_direct' course.id %}{% endif %}" class="btn-buy">

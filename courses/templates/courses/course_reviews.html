@@ -1,83 +1,404 @@
-<!-- courses/templates/courses/course_review.html -->
 {% extends 'courses/base.html' %}
 
 {% block content %}
-<div class="review-container">
-    <div class="review-header">
-        <a href="{% url 'course_detail' course.id %}" class="back-btn">← Quay lại khóa học</a>
-        <h1>⭐ Đánh giá khóa học</h1>
-        <p>{{ course.title }}</p>
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="cart-breadcrumb">
+            <a href="/" class="crumb">
+                <span>🏠</span>
+                <span>Trang chủ</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <a href="{% url 'course_list' %}" class="crumb">
+                <span>📚</span>
+                <span>Khóa học</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <a href="{% url 'course_detail' course.id %}" class="crumb">
+                <span>📖</span>
+                <span>{{ course.title|truncatechars:20 }}</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <div class="crumb current">
+                <span>⭐</span>
+                <span>Đánh giá</span>
+            </div>
+        </div>
     </div>
-    
-    <div class="review-form-card">
-        <form method="post" class="review-form">
-            {% csrf_token %}
-            
-            <div class="rating-section">
-                <h3>Đánh giá của bạn</h3>
-                <div class="stars-input">
-                    {% for i in "12345" %}
-                    <input type="radio" id="star{{ forloop.counter }}" name="rating" 
-                           value="{{ forloop.counter }}" 
-                           {% if existing_review and existing_review.rating == forloop.counter %}checked{% endif %}>
-                    <label for="star{{ forloop.counter }}">★</label>
-                    {% endfor %}
+</div>
+
+<!-- Review Container -->
+<div class="review-page">
+    <div class="container">
+        <div class="review-wrapper">
+            <!-- Review Header -->
+            <div class="review-header">
+                <h1>⭐ Đánh giá khóa học</h1>
+                <div class="course-info">
+                    <div class="course-thumbnail">
+                        <div class="thumbnail-placeholder">
+                            {{ course.title|slice:":1"|upper }}
+                        </div>
+                    </div>
+                    <div class="course-details">
+                        <h2>{{ course.title }}</h2>
+                        <div class="course-meta">
+                            <span class="meta-item">👨‍🏫 {{ course.instructor }}</span>
+                            <span class="meta-item">📚 {{ course.get_category_display }}</span>
+                            {% if course.average_rating %}
+                            <span class="meta-item">⭐ {{ course.average_rating|floatformat:1 }}/5.0</span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="comment-section">
-                <h3>Bình luận</h3>
-                <textarea name="comment" rows="6" 
-                          placeholder="Chia sẻ trải nghiệm của bạn với khóa học này...">{% if existing_review %}{{ existing_review.comment }}{% endif %}</textarea>
+
+            <!-- Review Form Card -->
+            <div class="review-form-section">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h3>
+                            {% if existing_review %}
+                                ✏️ Chỉnh sửa đánh giá của bạn
+                            {% else %}
+                                📝 Viết đánh giá của bạn
+                            {% endif %}
+                        </h3>
+                        <p class="form-subtitle">
+                            Chia sẻ trải nghiệm học tập giúp cải thiện chất lượng khóa học
+                        </p>
+                    </div>
+
+                    <form method="post" class="review-form" id="reviewForm">
+                        {% csrf_token %}
+                        
+                        <!-- Rating Section -->
+                        <div class="rating-section">
+                            <h4>Mức độ hài lòng của bạn</h4>
+                            <div class="stars-container">
+                                <div class="stars-input">
+                                    {% for i in "12345" %}
+                                    <input type="radio" id="star{{ forloop.counter }}" name="rating" 
+                                           value="{{ forloop.counter }}" 
+                                           {% if existing_review and existing_review.rating == forloop.counter %}checked{% endif %}
+                                           required>
+                                    <label for="star{{ forloop.counter }}">
+                                        <span class="star-icon">★</span>
+                                        <span class="star-label">{{ forloop.counter }} sao</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="rating-labels">
+                                    <span>Rất không hài lòng</span>
+                                    <span>Rất hài lòng</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comment Section -->
+                        <div class="comment-section">
+                            <h4>Đánh giá chi tiết</h4>
+                            <div class="textarea-container">
+                                <textarea name="comment" rows="8" 
+                                          placeholder="Chia sẻ trải nghiệm học tập của bạn...&#10;&#10;• Bạn thích điều gì nhất về khóa học?&#10;• Điểm nào có thể cải thiện?&#10;• Khóa học có đáp ứng mong đợi của bạn không?"
+                                          maxlength="1000"
+                                          id="commentTextarea">{% if existing_review %}{{ existing_review.comment }}{% endif %}</textarea>
+                                <div class="textarea-footer">
+                                    <small class="char-count">0/1000 ký tự</small>
+                                    <small class="form-hint">Đánh giá chi tiết sẽ giúp học viên khác có cái nhìn rõ hơn</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Tips -->
+                        <div class="review-tips">
+                            <h5>💡 Mẹo viết đánh giá hữu ích</h5>
+                            <ul>
+                                <li>Chia sẻ trải nghiệm học tập thực tế của bạn</li>
+                                <li>Nêu rõ điểm mạnh và điểm có thể cải thiện</li>
+                                <li>Tránh sử dụng ngôn ngữ không phù hợp</li>
+                                <li>Tập trung vào nội dung và chất lượng giảng dạy</li>
+                            </ul>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="{% url 'course_detail' course.id %}" class="btn-cancel">
+                                <span>←</span>
+                                <span>Quay lại</span>
+                            </a>
+                            <button type="submit" class="btn-submit">
+                                {% if existing_review %}
+                                <span>🔄</span>
+                                <span>Cập nhật đánh giá</span>
+                                {% else %}
+                                <span>🚀</span>
+                                <span>Gửi đánh giá</span>
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Existing Review Preview -->
+                {% if existing_review %}
+                <div class="existing-review-card">
+                    <div class="card-header">
+                        <h4>📋 Đánh giá hiện tại của bạn</h4>
+                        <span class="review-date">Cập nhật lần cuối: {{ existing_review.updated_at|date:"d/m/Y" }}</span>
+                    </div>
+                    <div class="review-preview">
+                        <div class="preview-rating">
+                            {% for i in "12345" %}
+                            <span class="star {% if i|add:"0" <= existing_review.rating %}filled{% endif %}">★</span>
+                            {% endfor %}
+                        </div>
+                        <p class="preview-comment">{{ existing_review.comment|truncatechars:200 }}</p>
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn-submit">
-                    {% if existing_review %}Cập nhật đánh giá{% else %}Gửi đánh giá{% endif %}
-                </button>
-                <a href="{% url 'course_detail' course.id %}" class="btn-cancel">Hủy</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
 <style>
-.review-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
+:root {
+    --accent: #3b82f6;
+    --accent-2: #6366f1;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #1e293b;
+    --muted: #64748b;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    --radius: 16px;
+    --transition: all 0.3s ease;
 }
 
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-optimized .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.cart-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .cart-breadcrumb {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.crumb:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.crumb.current {
+    color: var(--text);
+    font-weight: 600;
+    cursor: default;
+    background: #f8fafc;
+}
+
+.crumb-separator {
+    color: var(--muted);
+}
+
+/* Review Page */
+.review-page {
+    background: var(--light);
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Review Header */
 .review-header {
     text-align: center;
+    margin-bottom: 40px;
+}
+
+.review-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text);
     margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
-.back-btn {
-    color: #3b82f6;
-    text-decoration: none;
-    display: inline-block;
-    margin-bottom: 20px;
-}
-
-.review-form-card {
+.course-info {
     background: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-radius: var(--radius);
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    text-align: left;
 }
 
-.rating-section {
-    margin-bottom: 30px;
+.course-thumbnail {
+    flex-shrink: 0;
+}
+
+.thumbnail-placeholder {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.course-details {
+    flex: 1;
+}
+
+.course-details h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+.course-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 10px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+/* Review Form Section */
+.review-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.form-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.form-header {
     text-align: center;
+    margin-bottom: 40px;
+}
+
+.form-header h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.form-subtitle {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Rating Section */
+.rating-section {
+    margin-bottom: 40px;
+}
+
+.rating-section h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.stars-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 .stars-input {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin: 20px 0;
-    font-size: 2.5em;
+    flex-direction: row-reverse;
+    gap: 5px;
 }
 
 .stars-input input {
@@ -85,86 +406,454 @@
 }
 
 .stars-input label {
-    color: #ddd;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
     cursor: pointer;
-    transition: color 0.2s;
+    padding: 10px;
+    border-radius: 10px;
+    transition: var(--transition);
 }
 
-.stars-input input:checked ~ label,
-.stars-input label:hover,
-.stars-input label:hover ~ label {
-    color: #fbbf24;
+.stars-input label:hover {
+    background: var(--light);
 }
 
-.stars-input input:checked + label {
-    color: #fbbf24;
+.star-icon {
+    font-size: 3.5rem;
+    color: #e2e8f0;
+    transition: var(--transition);
 }
 
-.comment-section textarea {
+.star-label {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+    opacity: 0;
+    transition: var(--transition);
+}
+
+.stars-input label:hover .star-label,
+.stars-input input:checked + label .star-label {
+    opacity: 1;
+}
+
+.stars-input input:checked ~ label .star-icon,
+.stars-input label:hover .star-icon,
+.stars-input label:hover ~ label .star-icon {
+    color: var(--warning);
+}
+
+.stars-input input:checked + label .star-icon {
+    color: var(--warning);
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.rating-labels {
+    display: flex;
+    justify-content: space-between;
     width: 100%;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-family: inherit;
-    resize: vertical;
+    max-width: 500px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 10px;
 }
 
+/* Comment Section */
+.comment-section {
+    margin-bottom: 40px;
+}
+
+.comment-section h4 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 15px;
+}
+
+.textarea-container {
+    position: relative;
+}
+
+.textarea-container textarea {
+    width: 100%;
+    padding: 20px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: inherit;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 150px;
+    transition: var(--transition);
+}
+
+.textarea-container textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.char-count {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.form-hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* Review Tips */
+.review-tips {
+    background: var(--light);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 40px;
+}
+
+.review-tips h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-tips ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.review-tips li {
+    margin-bottom: 10px;
+    color: var(--muted);
+    position: relative;
+    padding-left: 25px;
+}
+
+.review-tips li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: bold;
+}
+
+/* Form Actions */
 .form-actions {
     display: flex;
-    gap: 15px;
-    margin-top: 30px;
+    gap: 20px;
 }
 
-.btn-submit, .btn-cancel {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+.btn-cancel, .btn-submit {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    border-radius: 12px;
     font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
     text-decoration: none;
-    text-align: center;
+    border: none;
+    font-family: inherit;
     flex: 1;
+    justify-content: center;
+}
+
+.btn-cancel {
+    background: var(--light);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: white;
+    border-color: var(--danger);
+    color: var(--danger);
+    transform: translateX(-5px);
 }
 
 .btn-submit {
-    background: #3b82f6;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
     color: white;
 }
 
 .btn-submit:hover {
-    background: #2563eb;
+    background: linear-gradient(135deg, var(--accent-2), #4f46e5);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
 }
 
-.btn-cancel {
-    background: #e5e7eb;
-    color: #4b5563;
+/* Existing Review Card */
+.existing-review-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+    border: 2px solid var(--success);
 }
 
-.btn-cancel:hover {
-    background: #d1d5db;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.card-header h4 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.review-date {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.review-preview {
+    background: var(--light);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.preview-rating {
+    margin-bottom: 15px;
+}
+
+.preview-rating .star {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-right: 5px;
+}
+
+.preview-rating .star.filled {
+    color: var(--warning);
+}
+
+.preview-comment {
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .review-header h1 {
+        font-size: 2rem;
+    }
+    
+    .course-info {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .course-meta {
+        justify-content: center;
+    }
+    
+    .form-card {
+        padding: 25px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-cancel, .btn-submit {
+        width: 100%;
+    }
+    
+    .stars-input {
+        gap: 2px;
+    }
+    
+    .star-icon {
+        font-size: 2.5rem;
+    }
+    
+    /* Responsive breadcrumb */
+    .cart-breadcrumb {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: none;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .review-page {
+        padding: 20px 0;
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    .form-header h3 {
+        font-size: 1.5rem;
+    }
+    
+    .rating-labels {
+        flex-direction: column;
+        gap: 5px;
+        text-align: center;
+    }
 }
 </style>
 
 <script>
-// Highlight stars on hover
-document.querySelectorAll('.stars-input label').forEach(label => {
-    label.addEventListener('mouseenter', function() {
-        const starId = this.getAttribute('for');
-        const starNumber = parseInt(starId.replace('star', ''));
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counter
+    const commentTextarea = document.getElementById('commentTextarea');
+    const charCount = document.querySelector('.char-count');
+    
+    commentTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        charCount.textContent = `${count}/1000 ký tự`;
         
-        // Highlight all stars up to this one
-        for (let i = 1; i <= starNumber; i++) {
-            document.querySelector(`label[for="star${i}"]`).style.color = '#fbbf24';
+        if (count > 900) {
+            charCount.style.color = 'var(--danger)';
+        } else if (count > 750) {
+            charCount.style.color = 'var(--warning)';
+        } else {
+            charCount.style.color = 'var(--muted)';
         }
     });
     
-    label.addEventListener('mouseleave', function() {
-        // Reset stars
-        document.querySelectorAll('.stars-input label').forEach(star => {
-            const input = document.querySelector(`#${star.getAttribute('for')}`);
-            star.style.color = input.checked ? '#fbbf24' : '#ddd';
+    // Initialize character count
+    commentTextarea.dispatchEvent(new Event('input'));
+    
+    // Star hover effect
+    const starLabels = document.querySelectorAll('.stars-input label');
+    const starIcons = document.querySelectorAll('.star-icon');
+    
+    starLabels.forEach(label => {
+        label.addEventListener('mouseenter', function() {
+            const starId = this.getAttribute('for');
+            const starNumber = parseInt(starId.replace('star', ''));
+            
+            // Highlight all stars up to this one
+            starIcons.forEach((icon, index) => {
+                if (index < starNumber) {
+                    icon.style.color = 'var(--warning)';
+                    icon.style.transform = 'scale(1.1)';
+                }
+            });
+        });
+        
+        label.addEventListener('mouseleave', function() {
+            // Reset stars to checked state
+            starIcons.forEach((icon, index) => {
+                const input = document.querySelector(`#star${index + 1}`);
+                icon.style.color = input.checked ? 'var(--warning)' : '#e2e8f0';
+                icon.style.transform = 'scale(1)';
+            });
         });
     });
+    
+    // Form submission validation
+    const reviewForm = document.getElementById('reviewForm');
+    reviewForm.addEventListener('submit', function(e) {
+        const rating = this.querySelector('input[name="rating"]:checked');
+        const comment = commentTextarea.value.trim();
+        
+        if (!rating) {
+            e.preventDefault();
+            alert('Vui lòng chọn số sao đánh giá!');
+            return;
+        }
+        
+        if (!comment) {
+            e.preventDefault();
+            alert('Vui lòng nhập nội dung đánh giá!');
+            commentTextarea.focus();
+            return;
+        }
+        
+        if (comment.length > 1000) {
+            e.preventDefault();
+            alert('Nội dung đánh giá không được vượt quá 1000 ký tự!');
+            commentTextarea.focus();
+            return;
+        }
+        
+        // Show loading state
+        const submitBtn = this.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+            <div class="loading-spinner"></div>
+            <span>Đang xử lý...</span>
+        `;
+        submitBtn.disabled = true;
+    });
+    
+    // Sticky breadcrumb effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+    }
 });
+
+// Loading spinner style
+const style = document.createElement('style');
+style.textContent = `
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}

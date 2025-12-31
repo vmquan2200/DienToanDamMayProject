@@ -2,6 +2,34 @@
 {% load static %}
 
 {% block content %}
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="breadcrumb-nav">
+            <a href="/" class="crumb-home">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                <span>Trang chủ</span>
+            </a>
+
+            <div class="crumb-separator">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </div>
+
+            <div class="crumb-current">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                <span>Liên hệ</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Contact Page -->
 <div class="contact-page">
     <!-- Hero Section -->
@@ -298,6 +326,79 @@
     --transition: all 0.3s ease;
 }
 
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-nav {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .breadcrumb-nav {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb-home,
+.crumb-link,
+.crumb-current {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.crumb-home,
+.crumb-link {
+    color: var(--accent);
+}
+
+.crumb-home:hover,
+.crumb-link:hover {
+    background: #f1f5f9;
+    color: var(--accent-2);
+    transform: translateY(-1px);
+}
+
+.crumb-current {
+    color: var(--text);
+    font-weight: 600;
+    background: #f8fafc;
+    cursor: default;
+}
+
+.crumb-separator {
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+}
+
 /* Contact Page */
 .contact-page {
     background: var(--light);
@@ -314,7 +415,7 @@
 .contact-hero {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 80px 0;
+    padding: 60px 0 80px;
     position: relative;
     overflow: hidden;
 }
@@ -326,6 +427,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    margin-top: 1rem;
 }
 
 .hero-title {
@@ -419,7 +521,7 @@
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: 30px;
-    margin: 50px 0;
+    margin: 30px 0 50px;
 }
 
 /* Section Card */
@@ -881,7 +983,7 @@ textarea {
 
 @media (max-width: 768px) {
     .contact-hero {
-        padding: 60px 0;
+        padding: 50px 0 60px;
     }
     
     .hero-title {
@@ -894,6 +996,23 @@ textarea {
     
     .social-links {
         grid-template-columns: 1fr;
+    }
+    
+    /* Responsive breadcrumb */
+    .breadcrumb-nav {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb-home span,
+    .crumb-current span {
+        display: none;
+    }
+    
+    .crumb-home,
+    .crumb-current {
+        padding: 0.5rem;
     }
 }
 
@@ -914,6 +1033,18 @@ textarea {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Sticky breadcrumb effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+    }
+
     // Character counter for message
     const messageTextarea = document.getElementById('message');
     const charCount = document.getElementById('charCount');

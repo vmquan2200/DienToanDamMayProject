@@ -1,6 +1,40 @@
 {% extends 'courses/base.html' %}
 
 {% block content %}
+<!-- Thêm Breadcrumb -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="cart-breadcrumb">
+            <a href="/" class="crumb">
+                <span>🏠</span>
+                <span>Trang chủ</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <a href="{% url 'forum_list' %}" class="crumb">
+                <span>💬</span>
+                <span>Diễn đàn</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            {% if post.category %}
+            <a href="{% url 'forum_category' post.category %}" class="crumb">
+                <span>🏷️</span>
+                <span>{{ post.get_category_display }}</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            {% endif %}
+            <a href="{% url 'forum_detail' post.id %}" class="crumb">
+                <span>📖</span>
+                <span>{{ post.title|truncatechars:30 }}</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <div class="crumb current">
+                <span>✏️</span>
+                <span>Chỉnh sửa</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="forum-edit-container">
     <div class="forum-edit-header">
         <h1>✏️ Chỉnh sửa bài viết</h1>
@@ -114,6 +148,78 @@
 </div>
 
 <style>
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-optimized .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.cart-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .cart-breadcrumb {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.crumb:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.crumb.current {
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: default;
+    background: #f8fafc;
+}
+
+.crumb-separator {
+    color: var(--text-secondary);
+}
+
+/* Rest of your existing CSS stays exactly the same... */
 :root {
     --primary: #3b82f6;
     --primary-dark: #2563eb;
@@ -442,6 +548,38 @@
         background: linear-gradient(135deg, #0f172a, #1e293b);
         border-left-color: var(--primary);
     }
+    
+    /* Breadcrumb dark mode */
+    .breadcrumb-optimized {
+        background: rgba(30, 41, 59, 0.95);
+        border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+    }
+    
+    .breadcrumb-optimized.sticky {
+        background: rgba(15, 23, 42, 0.98);
+    }
+    
+    .cart-breadcrumb {
+        background: #1e293b;
+        border: 1px solid #334155;
+    }
+    
+    .crumb {
+        color: #60a5fa;
+    }
+    
+    .crumb.current {
+        color: #f1f5f9;
+        background: #0f172a;
+    }
+    
+    .crumb:hover {
+        background: rgba(59, 130, 246, 0.2);
+    }
+    
+    .crumb-separator {
+        color: #94a3b8;
+    }
 }
 
 /* Responsive */
@@ -484,11 +622,61 @@
         font-size: 1.1rem;
         padding: 0.875rem 1.25rem;
     }
+    
+    /* Responsive breadcrumb */
+    .cart-breadcrumb {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: none;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .crumb span:last-child {
+        display: none;
+    }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Breadcrumb sticky effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+        
+        // Responsive breadcrumb
+        function handleResponsiveBreadcrumb() {
+            const crumbs = breadcrumb.querySelectorAll('.crumb span:last-child');
+            const isMobile = window.innerWidth <= 768;
+            
+            crumbs.forEach(crumb => {
+                if (isMobile && !crumb.closest('.crumb').classList.contains('current')) {
+                    crumb.style.display = 'none';
+                } else {
+                    crumb.style.display = 'inline';
+                }
+            });
+        }
+        
+        handleResponsiveBreadcrumb();
+        window.addEventListener('resize', handleResponsiveBreadcrumb);
+    }
+
     const titleInput = document.getElementById('title');
     const charCount = document.querySelector('.char-count');
     const tagsInput = document.getElementById('tags');

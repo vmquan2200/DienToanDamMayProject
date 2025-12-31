@@ -1,10 +1,10 @@
 {% extends 'courses/base.html' %}
 
 {% block content %}
-<!-- Cart Page -->
-<div class="cart-page">
+<!-- Breadcrumb Section -->
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
     <div class="container">
-        <!-- Breadcrumb -->
         <div class="cart-breadcrumb">
             <a href="/" class="crumb">
                 <span>🏠</span>
@@ -16,7 +16,12 @@
                 <span>Giỏ hàng</span>
             </div>
         </div>
+    </div>
+</div>
 
+<!-- Cart Page -->
+<div class="cart-page">
+    <div class="container">
         <!-- Cart Header -->
         <div class="cart-header">
             <h1>🛒 Giỏ hàng của bạn</h1>
@@ -34,7 +39,7 @@
                 
                 <div class="cart-items">
                     {% for item in cart_items %}
-                    <div class="cart-item">
+                    <div class="cart-item" data-course-id="{{ item.course.id }}">
                         <div class="item-image">
                             <div class="course-category">{{ item.course.get_category_display|default:"Lập trình" }}</div>
                         </div>
@@ -71,7 +76,7 @@
                                     <span>Xem chi tiết</span>
                                 </a>
                                 <a href="{% url 'remove_from_cart' item.course.id %}" class="btn-remove" 
-                                   onclick="return confirm('Bạn có chắc muốn xóa khóa học này khỏi giỏ hàng?')">
+                                   onclick="return removeFromCart(event, {{ item.course.id }})">
                                     <span>🗑️</span>
                                     <span>Xóa</span>
                                 </a>
@@ -216,26 +221,48 @@
     --transition: all 0.3s ease;
 }
 
-/* Cart Page */
-.cart-page {
-    background: var(--light);
-    min-height: 100vh;
-    padding: 40px 0;
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
 }
 
-.container {
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+/* Keep your original breadcrumb style but add container */
+.breadcrumb-optimized .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
 
-/* Breadcrumb */
 .cart-breadcrumb {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 30px;
     font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .cart-breadcrumb {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .crumb {
@@ -252,22 +279,38 @@
 
 .crumb:hover {
     background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
 }
 
 .crumb.current {
     color: var(--text);
     font-weight: 600;
     cursor: default;
+    background: #f8fafc;
 }
 
 .crumb-separator {
     color: var(--muted);
 }
 
+/* Cart Page */
+.cart-page {
+    background: var(--light);
+    min-height: 100vh;
+    padding: 40px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
 /* Cart Header */
 .cart-header {
     text-align: center;
     margin-bottom: 40px;
+    margin-top: 1rem;
 }
 
 .cart-header h1 {
@@ -322,6 +365,12 @@
     margin-bottom: 20px;
     transition: var(--transition);
     border: 2px solid transparent;
+    position: relative;
+}
+
+.cart-item.removing {
+    opacity: 0.5;
+    transform: scale(0.95);
 }
 
 .cart-item:hover {
@@ -783,6 +832,47 @@
     transform: translateY(-3px);
 }
 
+/* Notification Styles */
+.cart-notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--success);
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.cart-notification.error {
+    border-left-color: var(--danger);
+}
+
+.cart-notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-icon {
+    font-size: 1.5rem;
+}
+
+.notification-text {
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .cart-content {
@@ -814,11 +904,44 @@
         max-width: 300px;
         justify-content: center;
     }
+    
+    /* Responsive breadcrumb */
+    .cart-breadcrumb {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: none;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .cart-header h1 {
+        font-size: 2rem;
+    }
 }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Sticky breadcrumb effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+    }
+
     // Promo code suggestions
     document.querySelectorAll('.promo-tag').forEach(function(tag) {
         tag.addEventListener('click', function() {
@@ -834,28 +957,176 @@ document.addEventListener('DOMContentLoaded', function() {
         applyBtn.addEventListener('click', function() {
             const promoCode = document.getElementById('promoCode').value.trim();
             if (promoCode) {
-                // In a real app, you would make an AJAX request here
-                alert(`Đã áp dụng mã giảm giá: ${promoCode}`);
+                showNotification(`Đã áp dụng mã giảm giá: ${promoCode}`, 'success');
             } else {
-                alert('Vui lòng nhập mã giảm giá');
+                showNotification('Vui lòng nhập mã giảm giá', 'error');
             }
         });
     }
     
-    // Update cart count in header (if you have one)
+    // Update cart count in header
     function updateCartCount() {
         const cartItems = document.querySelectorAll('.cart-item');
         const cartCount = cartItems.length;
         
-        // Update cart count in navbar (if exists)
-        const cartCountElement = document.querySelector('.cart-count');
-        if (cartCountElement) {
-            cartCountElement.textContent = cartCount;
-            cartCountElement.style.display = cartCount > 0 ? 'flex' : 'none';
+        // Update cart count in navbar
+        const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge');
+        cartCountElements.forEach(element => {
+            element.textContent = cartCount;
+            element.style.display = cartCount > 0 ? 'flex' : 'none';
+        });
+        
+        // Update summary
+        updateSummary(cartCount);
+    }
+    
+    function updateSummary(itemCount) {
+        const rowLabel = document.querySelector('.summary-row .row-label');
+        if (rowLabel) {
+            rowLabel.textContent = `Tạm tính (${itemCount} khóa học)`;
         }
     }
     
     updateCartCount();
 });
+
+// AJAX remove from cart
+function removeFromCart(event, courseId) {
+    event.preventDefault();
+    
+    if (!confirm('Bạn có chắc muốn xóa khóa học này khỏi giỏ hàng?')) {
+        return false;
+    }
+    
+    const cartItem = document.querySelector(`.cart-item[data-course-id="${courseId}"]`);
+    if (cartItem) {
+        cartItem.classList.add('removing');
+    }
+    
+    // Get CSRF token
+    const csrfToken = getCookie('csrftoken');
+    
+    // Send AJAX request
+    fetch(`/remove-from-cart/${courseId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `csrfmiddlewaretoken=${csrfToken}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove item from DOM with animation
+            if (cartItem) {
+                setTimeout(() => {
+                    cartItem.remove();
+                    
+                    // Update cart count
+                    updateCartCount();
+                    
+                    // Show notification
+                    showNotification(data.message, 'success');
+                    
+                    // If cart is empty, reload page to show empty cart message
+                    const remainingItems = document.querySelectorAll('.cart-item');
+                    if (remainingItems.length === 0) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                }, 300);
+            }
+        } else {
+            if (cartItem) {
+                cartItem.classList.remove('removing');
+            }
+            showNotification(data.error || 'Có lỗi xảy ra', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        if (cartItem) {
+            cartItem.classList.remove('removing');
+        }
+        showNotification('Có lỗi xảy ra, vui lòng thử lại', 'error');
+    });
+    
+    return false;
+}
+
+// Helper function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Show notification
+function showNotification(message, type = 'success') {
+    // Remove old notification
+    const oldNotification = document.querySelector('.cart-notification');
+    if (oldNotification) {
+        oldNotification.remove();
+    }
+    
+    // Create new notification
+    const notification = document.createElement('div');
+    notification.className = `cart-notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${type === 'error' ? '❌' : '✅'}</span>
+            <span class="notification-text">${message}</span>
+        </div>
+    `;
+    
+    // Add to body
+    document.body.appendChild(notification);
+    
+    // Show animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Update cart count after removal
+function updateCartCount() {
+    const cartItems = document.querySelectorAll('.cart-item');
+    const cartCount = cartItems.length;
+    
+    // Update navbar cart count
+    const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge');
+    cartCountElements.forEach(element => {
+        element.textContent = cartCount;
+        element.style.display = cartCount > 0 ? 'flex' : 'none';
+    });
+    
+    // Update summary
+    const rowLabel = document.querySelector('.summary-row .row-label');
+    if (rowLabel) {
+        rowLabel.textContent = `Tạm tính (${cartCount} khóa học)`;
+    }
+}
 </script>
 {% endblock %}

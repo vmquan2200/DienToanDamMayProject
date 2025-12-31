@@ -1113,9 +1113,203 @@
         padding: 0.5rem;
     }
 }
+/* ===== NOTIFICATION STYLES ===== */
+.custom-notification {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    z-index: 9999;
+    background: white;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid var(--success);
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.custom-notification.error {
+    border-left-color: var(--danger);
+}
+
+.custom-notification.warning {
+    border-left-color: var(--warning);
+}
+
+.custom-notification.show {
+    transform: translateX(0);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.notification-icon {
+    font-size: 1.5rem;
+}
+
+.notification-text {
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+}
 </style>
 
 <script>
+// AJAX for add to cart
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartForm = document.querySelector('form[action*="add-to-cart"]');
+    
+    if (addToCartForm) {
+        addToCartForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Ngăn form submit bình thường
+            
+            const formData = new FormData(this);
+            const url = this.action;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Hiển thị loading indicator
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            const originalBg = submitBtn.style.background;
+            submitBtn.innerHTML = '<span>🔄</span><span>Đang thêm...</span>';
+            submitBtn.disabled = true;
+            
+            // Gửi AJAX request
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Xử lý response
+                if (data.success) {
+                    // Hiển thị thông báo thành công
+                    showNotification('✅ ' + data.message, 'success');
+                    
+                    // Cập nhật số lượng giỏ hàng
+                    updateCartCount(data.cart_count);
+                    
+                    // Thay đổi button thành "Đã thêm" tạm thời
+                    submitBtn.innerHTML = '<span>✅</span><span>Đã thêm</span>';
+                    submitBtn.style.background = 'linear-gradient(135deg, #10b981, #34d399)';
+                    
+                    // Sau 2 giây đổi lại button ban đầu
+                    setTimeout(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.style.background = originalBg;
+                        submitBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    // Hiển thị thông báo cảnh báo
+                    showNotification('⚠️ ' + data.message, 'warning');
+                    
+                    // Khôi phục button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.style.background = originalBg;
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('❌ Có lỗi xảy ra, vui lòng thử lại!', 'error');
+                
+                // Khôi phục button
+                submitBtn.innerHTML = originalText;
+                submitBtn.style.background = originalBg;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+});
+
+// Hàm hiển thị thông báo
+function showNotification(message, type = 'success') {
+    // Xóa thông báo cũ nếu có
+    const oldNotification = document.querySelector('.custom-notification');
+    if (oldNotification) {
+        oldNotification.remove();
+    }
+    
+    // Tạo thông báo mới
+    const notification = document.createElement('div');
+    notification.className = `custom-notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '✅'}</span>
+            <span class="notification-text">${message}</span>
+        </div>
+    `;
+    
+    // Thêm vào body
+    document.body.appendChild(notification);
+    
+    // Hiệu ứng xuất hiện
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Tự động ẩn sau 3 giây
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Hàm cập nhật số lượng giỏ hàng
+function updateCartCount(count) {
+    // Tìm các phần tử hiển thị số lượng giỏ hàng
+    const cartCountElements = document.querySelectorAll('.cart-count, .cart-badge, .cart-item-count');
+    
+    cartCountElements.forEach(element => {
+        element.textContent = count;
+        element.style.display = count > 0 ? 'flex' : 'none';
+    });
+    
+    // Nếu không có phần tử nào, có thể tạo mới
+    if (cartCountElements.length === 0) {
+        // Tìm link giỏ hàng và thêm badge
+        const cartLink = document.querySelector('a[href*="cart"]');
+        if (cartLink) {
+            let badge = cartLink.querySelector('.cart-badge');
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'cart-badge';
+                badge.style.cssText = `
+                    position: absolute;
+                    top: -5px;
+                    right: -5px;
+                    background: #ef4444;
+                    color: white;
+                    border-radius: 50%;
+                    width: 20px;
+                    height: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: bold;
+                `;
+                cartLink.style.position = 'relative';
+                cartLink.appendChild(badge);
+            }
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+}
 // Character counter for review textarea
 document.addEventListener('DOMContentLoaded', function() {
     const textarea = document.querySelector('textarea[name="comment"]');

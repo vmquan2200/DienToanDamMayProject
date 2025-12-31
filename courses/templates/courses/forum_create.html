@@ -1,22 +1,47 @@
 {% extends 'courses/base.html' %}
 
 {% block content %}
-<div class="forum-create-page">
-    <!-- Navigation -->
-    <div class="create-navigation">
-        <a href="{% url 'forum_list' %}" class="nav-back">
-            <span>←</span>
-            <span>Quay lại diễn đàn</span>
-        </a>
-        <div class="nav-progress">
-            <div class="progress-step active">1</div>
-            <div class="progress-step">2</div>
-            <div class="progress-step">3</div>
+<!-- Breadcrumb Section -->
+<div class="breadcrumb-optimized" id="breadcrumb">
+    <div class="container">
+        <div class="cart-breadcrumb">
+            <a href="/" class="crumb">
+                <span>🏠</span>
+                <span>Trang chủ</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <a href="{% url 'forum_list' %}" class="crumb">
+                <span>💬</span>
+                <span>Diễn đàn</span>
+            </a>
+            <div class="crumb-separator">›</div>
+            <div class="crumb current">
+                <span>📝</span>
+                <span>Tạo bài viết</span>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Main Content -->
+<!-- Forum Create Page -->
+<div class="forum-create-page">
     <div class="container">
+        <!-- Progress Steps -->
+        <div class="create-progress">
+            <div class="progress-step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Thông tin cơ bản</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">2</div>
+                <div class="step-label">Tùy chọn nâng cao</div>
+            </div>
+            <div class="progress-step">
+                <div class="step-number">3</div>
+                <div class="step-label">Xem trước & Đăng bài</div>
+            </div>
+        </div>
+
         <div class="create-wrapper">
             <!-- Left: Form -->
             <div class="create-form-section">
@@ -210,16 +235,21 @@
 
                     <!-- Form Navigation -->
                     <div class="form-navigation">
-                        <button type="button" class="btn-prev" id="btnPrev" disabled>
+                        <a href="{% url 'forum_list' %}" class="btn-cancel">
                             <span>←</span>
-                            <span>Quay lại</span>
-                        </button>
+                            <span>Hủy</span>
+                        </a>
                         
                         <div class="step-indicators">
                             <button type="button" class="step-indicator active" data-step="1">1</button>
                             <button type="button" class="step-indicator" data-step="2">2</button>
                             <button type="button" class="step-indicator" data-step="3">3</button>
                         </div>
+                        
+                        <button type="button" class="btn-prev" id="btnPrev" disabled>
+                            <span>←</span>
+                            <span>Quay lại</span>
+                        </button>
                         
                         <button type="button" class="btn-next" id="btnNext">
                             <span>Tiếp theo</span>
@@ -318,10 +348,82 @@
     --transition: all 0.3s ease;
 }
 
+/* ===== BREADCRUMB STYLES ===== */
+.breadcrumb-optimized {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    padding: 0.75rem 0;
+    background: rgba(255, 255, 255, 0.98);
+}
+
+.breadcrumb-optimized .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.cart-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    background: white;
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    transition: var(--transition);
+}
+
+.breadcrumb-optimized.sticky .cart-breadcrumb {
+    padding: 0.5rem 1.25rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.crumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.crumb:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.crumb.current {
+    color: var(--text);
+    font-weight: 600;
+    cursor: default;
+    background: #f8fafc;
+}
+
+.crumb-separator {
+    color: var(--muted);
+}
+
 /* Forum Create Page */
 .forum-create-page {
     background: var(--light);
     min-height: 100vh;
+    padding: 40px 0;
 }
 
 .container {
@@ -330,55 +432,55 @@
     padding: 0 20px;
 }
 
-/* Navigation */
-.create-navigation {
+/* Progress Steps */
+.create-progress {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--border);
-}
-
-.nav-back {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 8px;
-    transition: var(--transition);
-}
-
-.nav-back:hover {
-    background: rgba(59, 130, 246, 0.1);
-    transform: translateX(-5px);
-}
-
-.nav-progress {
-    display: flex;
-    gap: 10px;
+    justify-content: center;
+    gap: 50px;
+    margin-bottom: 40px;
+    padding: 20px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
 }
 
 .progress-step {
-    width: 30px;
-    height: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.step-number {
+    width: 40px;
+    height: 40px;
+    background: var(--light);
+    border: 2px solid var(--border);
     border-radius: 50%;
-    background: var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--muted);
     transition: var(--transition);
 }
 
-.progress-step.active {
+.progress-step.active .step-number {
     background: var(--accent);
+    border-color: var(--accent);
     color: white;
     transform: scale(1.1);
+}
+
+.step-label {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+.progress-step.active .step-label {
+    color: var(--text);
 }
 
 /* Create Wrapper */
@@ -386,7 +488,6 @@
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 30px;
-    margin-bottom: 50px;
 }
 
 /* Form Section */
@@ -832,7 +933,7 @@
     gap: 15px;
 }
 
-.btn-prev, .btn-next, .btn-submit {
+.btn-cancel, .btn-prev, .btn-next, .btn-submit {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -842,6 +943,23 @@
     font-size: 1rem;
     cursor: pointer;
     transition: var(--transition);
+    text-decoration: none;
+}
+
+.btn-cancel {
+    background: var(--light);
+    color: var(--text);
+    border: 2px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: white;
+    border-color: var(--danger);
+    color: var(--danger);
+    transform: translateX(-5px);
+}
+
+.btn-prev, .btn-next, .btn-submit {
     border: none;
     font-family: inherit;
 }
@@ -1024,13 +1142,9 @@
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding: 0 15px;
-    }
-    
-    .create-navigation {
+    .create-progress {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
         text-align: center;
     }
     
@@ -1047,13 +1161,28 @@
         gap: 15px;
     }
     
-    .btn-prev, .btn-next, .btn-submit {
+    .btn-cancel, .btn-prev, .btn-next, .btn-submit {
         width: 100%;
         justify-content: center;
     }
     
     .step-indicators {
         order: 1;
+    }
+    
+    /* Responsive breadcrumb */
+    .cart-breadcrumb {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .crumb span:last-child {
+        display: none;
+    }
+    
+    .crumb {
+        padding: 0.5rem;
     }
 }
 </style>
@@ -1063,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('createForm');
     const steps = document.querySelectorAll('.form-step');
     const stepIndicators = document.querySelectorAll('.step-indicator');
-    const navProgress = document.querySelectorAll('.progress-step');
+    const progressSteps = document.querySelectorAll('.progress-step');
     const btnPrev = document.getElementById('btnPrev');
     const btnNext = document.getElementById('btnNext');
     const btnSubmit = document.getElementById('btnSubmit');
@@ -1191,12 +1320,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Hide all steps
         steps.forEach(s => s.classList.remove('active'));
         stepIndicators.forEach(s => s.classList.remove('active'));
-        navProgress.forEach(s => s.classList.remove('active'));
+        progressSteps.forEach(s => s.classList.remove('active'));
         
         // Show current step
         document.getElementById(`step${step}`).classList.add('active');
         document.querySelector(`.step-indicator[data-step="${step}"]`).classList.add('active');
-        navProgress[step - 1].classList.add('active');
+        progressSteps[step - 1].classList.add('active');
         
         // Update navigation buttons
         btnPrev.disabled = step === 1;
@@ -1293,6 +1422,18 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize
     updateTagsDisplay();
     showStep(1);
+
+    // Sticky breadcrumb effect
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) {
+                breadcrumb.classList.add('sticky');
+            } else {
+                breadcrumb.classList.remove('sticky');
+            }
+        });
+    }
 });
 
 // Make removeTag function available globally

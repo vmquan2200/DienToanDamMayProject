@@ -667,7 +667,7 @@
         <div>
             <a href="/" style="font-weight: bold;">🏠 Trang chủ</a>
             <a href="/about/">📖 Giới thiệu</a>
-            <a href="/contact/">📞 Liên hệ</a>
+            <a href="/contact/#breadcrumb">📞 Liên hệ</a>
             
             <div class="nav-dropdown">
                 <a href="/forum/" class="nav-link">💬 Diễn đàn</a>
@@ -778,6 +778,50 @@
                 }, 500);
             });
         }, 5000);
+    </script>
+    <script>
+        // Append #breadcrumb to top-level nav links (except account/cart links)
+        (function() {
+            // exclude only account-related pages; include cart and my-courses so they scroll to breadcrumb
+            const excluded = ['accounts', 'my-dashboard'];
+            document.querySelectorAll('nav a[href^="/"]').forEach(a => {
+                try {
+                    const raw = a.getAttribute('href');
+                    if (!raw) return;
+                    if (raw === '/' || raw.includes('#')) return;
+                    const u = new URL(raw, location.origin);
+                    const segments = u.pathname.split('/').filter(Boolean);
+                    // Append for top-level pages (e.g. /about/), forum create (/forum/create/),
+                    // or any route containing 'learning-path' so the page scrolls to breadcrumb.
+                    const isForumCreate = (segments[0] === 'forum' && segments[1] === 'create');
+                    const hasLearningPath = segments.includes('learning-path');
+                    if ((segments.length === 1 && !excluded.includes(segments[0])) || isForumCreate || hasLearningPath) {
+                        // keep any search params, append fragment
+                        a.setAttribute('href', u.pathname + (u.search || '') + '#breadcrumb');
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            });
+
+            // If page opened with #breadcrumb, adjust scroll so sticky nav doesn't cover it
+            function scrollToBreadcrumbIfNeeded() {
+                if (location.hash === '#breadcrumb') {
+                    const el = document.getElementById('breadcrumb');
+                    if (el) {
+                        const nav = document.querySelector('nav');
+                        const offset = (nav && nav.offsetHeight) ? nav.offsetHeight + 8 : 0;
+                        const top = window.pageYOffset + el.getBoundingClientRect().top - offset;
+                        window.scrollTo({ top: top, behavior: 'smooth' });
+                    }
+                }
+            }
+
+            // Run on load (use timeout to allow browser's native jump to complete)
+            window.addEventListener('load', function() {
+                setTimeout(scrollToBreadcrumbIfNeeded, 50);
+            });
+        })();
     </script>
 </body>
 </html>
