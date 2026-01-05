@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -154,6 +155,10 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'courses/static'),
 ]
 
+# Directory where `collectstatic` will collect static files for production
+# Set to a folder at project root; change if you prefer another location.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 # Media files (uploads)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -216,3 +221,6 @@ DEV_AUTO_LOGIN_ON_CONFIRM = os.environ.get(
 
 # Optional site domain override for confirmation links
 SITE_DOMAIN = os.environ.get('SITE_DOMAIN', '')
+
+# Grappelli admin title (customize as you like)
+GRAPPELLI_ADMIN_TITLE = os.environ.get('GRAPPELLI_ADMIN_TITLE', 'Học Lập Trình Admin')

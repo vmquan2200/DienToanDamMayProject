@@ -5,122 +5,382 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng xuất - Học Lập Trình</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --neutral-gradient: linear-gradient(135deg, #a8c6df 0%, #5d9cec 100%);
+            --light-color: #ffffff;
+            --dark-color: #2c3e50;
+            --gray-color: #6c757d;
+            --light-gray: #f8f9fa;
+            --shadow: 0 15px 35px rgba(50, 50, 93, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+            --shadow-hover: 0 18px 40px rgba(50, 50, 93, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --border-radius: 16px;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--primary-gradient);
+            margin: 0;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-        }
-        
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .icon {
-            font-size: 80px;
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        p {
-            color: #7f8c8d;
-            margin-bottom: 30px;
+            color: var(--dark-color);
             line-height: 1.6;
         }
-        
+
+        .container {
+            background: var(--light-color);
+            padding: 50px 40px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: var(--danger-gradient);
+        }
+
+        .icon-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ffeaea 0%, #ffd0d0 100%);
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.2);
+            transition: var(--transition);
+        }
+
+        .icon {
+            font-size: 48px;
+            color: #ff6b6b;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            color: var(--dark-color);
+            margin-bottom: 15px;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--gray-color);
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.7;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .user-info {
+            background: var(--light-gray);
+            padding: 22px;
+            border-radius: 12px;
+            margin: 25px 0 35px;
+            text-align: left;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            transition: var(--transition);
+        }
+
+        .user-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .user-info-label {
+            font-size: 14px;
+            color: var(--gray-color);
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: var(--dark-color);
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .user-email {
+            color: var(--gray-color);
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
         .btn {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px 32px;
             border: none;
             border-radius: 50px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            min-width: 180px;
+            letter-spacing: 0.3px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
-        
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
+            z-index: -1;
+        }
+
+        .btn:hover::after {
+            transform: translateX(0);
+        }
+
         .btn-logout {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background: var(--danger-gradient);
             color: white;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
         }
-        
+
         .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
         }
-        
+
         .btn-cancel {
-            background: #95a5a6;
-            color: white;
+            background: var(--light-gray);
+            color: var(--gray-color);
+            border: 2px solid #e9ecef;
         }
-        
+
         .btn-cancel:hover {
-            background: #7f8c8d;
-            transform: translateY(-2px);
+            background: #e9ecef;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.15);
         }
-        
-        .user-info {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+
+        .btn-icon {
+            margin-right: 10px;
+            font-size: 18px;
         }
-        
-        .user-name {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .user-email {
-            color: #7f8c8d;
+
+        .countdown {
+            margin-top: 25px;
             font-size: 14px;
+            color: var(--gray-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .countdown-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: var(--danger-gradient);
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 13px;
+            animation: countdownPulse 1s infinite;
+        }
+
+        .warning-note {
+            background: #fff9e6;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #856404;
+            text-align: left;
+            display: flex;
+            gap: 12px;
+        }
+
+        .warning-icon {
+            color: #fdcb6e;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes countdownPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .container {
+                padding: 40px 25px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 280px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --light-color: #1e272e;
+                --dark-color: #f5f6fa;
+                --gray-color: #dcdde1;
+                --light-gray: #2d3436;
+                --shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+                --shadow-hover: 0 18px 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .warning-note {
+                background: #3d2c00;
+                border-color: #5a4a00;
+                color: #ffdd59;
+            }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <div class="icon">🚪</div>
-        <h1>Đăng xuất</h1>
+        <div class="icon-container">
+            <div class="icon"><i class="fas fa-sign-out-alt"></i></div>
+        </div>
+        
+        <h1>Đăng xuất tài khoản</h1>
+        <p class="subtitle">Bạn có chắc chắn muốn đăng xuất khỏi hệ thống? Hãy xác nhận hành động của bạn bên dưới.</p>
         
         {% if user.is_authenticated %}
         <div class="user-info">
-            <div class="user-name">Xin chào, {{ user.username }}</div>
-            <div class="user-email">{{ user.email|default:"Chưa có email" }}</div>
+            <div class="user-info-label">Tài khoản hiện tại</div>
+            <div class="user-name"><i class="fas fa-user-circle"></i> {{ user.username }}</div>
+            <div class="user-email"><i class="fas fa-envelope"></i> {{ user.email|default:"Chưa có thông tin email" }}</div>
         </div>
         {% endif %}
         
-        <p>Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?</p>
+        <div class="warning-note">
+            <div class="warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div>Sau khi đăng xuất, bạn sẽ cần đăng nhập lại để truy cập vào các tính năng dành cho thành viên.</div>
+        </div>
         
         <form method="post" action="{% url 'account_logout' %}">
             {% csrf_token %}
             <input type="hidden" name="next" value="/">
-            <button type="submit" class="btn btn-logout">✅ Đăng xuất ngay</button>
+            <div class="button-group">
+                <button type="submit" class="btn btn-logout">
+                    <span class="btn-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    <span>Đăng xuất ngay</span>
+                </button>
+                <a href="javascript:history.back()" class="btn btn-cancel">
+                    <span class="btn-icon"><i class="fas fa-arrow-left"></i></span>
+                    <span>Quay lại</span>
+                </a>
+            </div>
         </form>
         
-        <a href="javascript:history.back()" class="btn btn-cancel">↩️ Quay lại</a>
+        <div class="countdown">
+            <span>Hệ thống sẽ tự động đăng xuất sau</span>
+            <span class="countdown-number">2</span>
+            <span>giây</span>
+        </div>
     </div>
 
     <script>
-        // Tự động submit form sau 2 giây nếu user không click
-        setTimeout(function() {
-            document.querySelector('form').submit();
-        }, 2000);
+        // Countdown timer
+        let countdown = 2;
+        const countdownElement = document.querySelector('.countdown-number');
+        const form = document.querySelector('form');
+        
+        const countdownInterval = setInterval(function() {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                form.submit();
+            }
+        }, 1000);
+        
+        // Cancel auto-logout if user interacts
+        document.addEventListener('click', function() {
+            clearInterval(countdownInterval);
+            document.querySelector('.countdown').innerHTML = '<i class="fas fa-pause"></i> Đã tắt tự động đăng xuất';
+        });
+        
+        // Add keyboard support
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                history.back();
+            }
+        });
     </script>
 </body>
 </html>

@@ -1219,6 +1219,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmForm = document.querySelector('.action-form');
     if (confirmForm) {
         confirmForm.addEventListener('submit', function(e) {
+            // mark that after any redirect/return we should scroll to breadcrumb
+            try {
+                sessionStorage.setItem('scroll_to_breadcrumb', '1');
+            } catch (err) {
+                // ignore
+            }
+
             const btn = this.querySelector('.btn-confirm');
             if (btn) {
                 btn.innerHTML = '<span>⏳</span><span>Đang xử lý...</span>';
@@ -1320,6 +1327,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // If the user just confirmed payment (or returned from a provider), auto-scroll to breadcrumb
+    try {
+        if (sessionStorage.getItem('scroll_to_breadcrumb')) {
+            const bc = document.getElementById('breadcrumb');
+            if (bc) {
+                setTimeout(() => {
+                    bc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 120);
+            }
+            sessionStorage.removeItem('scroll_to_breadcrumb');
+        }
+
+        // Also support direct landing when clicking a payment method link like '?method=banking' or '?method=momo'
+        const params = new URLSearchParams(window.location.search);
+        const methodParam = (params.get('method') || '').toLowerCase();
+        if (methodParam === 'banking' || methodParam === 'momo') {
+            const bc2 = document.getElementById('breadcrumb');
+            if (bc2) {
+                setTimeout(() => {
+                    bc2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 120);
+            }
+        }
+        // Fallback: if server rendered a payment badge (variable `payment_method`), scroll as well
+        if (!methodParam) {
+            const badge = document.querySelector('.payment-method-badge');
+            if (badge) {
+                const bc3 = document.getElementById('breadcrumb');
+                if (bc3) {
+                    setTimeout(() => {
+                        bc3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 120);
+                }
+            }
+        }
+    } catch (err) {
+        // ignore storage/errors
+    }
 });
 </script>
 {% endblock %}
