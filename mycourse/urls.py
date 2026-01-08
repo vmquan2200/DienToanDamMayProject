@@ -23,9 +23,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('grappelli', RedirectView.as_view(url='/grappelli/')),
     # Redirect the root grappelli path to the admin UI (Grappelli itself doesn't provide a root view)
-    path('grappelli/', RedirectView.as_view(url='/admin/')),
+    path('grappelli/', RedirectView.as_view(url='/secret-admin/')),
     path('grappelli/', include('grappelli.urls')),
-    path('admin/', admin.site.urls),
+    path('secret-admin/', admin.site.urls),
     path('', include('courses.urls')),  # ← Thêm dòng này để bao gồm URLs từ app courses 
     path('accounts/', include('allauth.urls')),  # ← Thêm dòng này để bao gồm URLs từ allauth 
 ]
