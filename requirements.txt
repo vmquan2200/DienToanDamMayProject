@@ -1,0 +1,7 @@
+django
+django-grappelli
+django-allauth
+python-dotenv
+qrcode
+Pillow
+

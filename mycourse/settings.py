@@ -16,17 +16,21 @@ load_dotenv(BASE_DIR / '.env')
 # --------------------------------------------------
 # SECURITY
 # --------------------------------------------------
-SECRET_KEY = 'django-insecure-)=gx8&dg4@=ya36_h=++i1pm03=v7aq%hy6(w(ju8wm_o+v*p7'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-)=gx8&dg4@=ya36_h=++i1pm03=v7aq%hy6(w(ju8wm_o+v*p7')
 
-DEBUG = False   # ❗ BẮT BUỘC TRÊN PYTHONANYWHERE
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'elonmust.pythonanywhere.com',
     'www.elonmust.pythonanywhere.com',
+    'localhost',
+    '127.0.0.1',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://elonmust.pythonanywhere.com',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
 ]
 
 # --------------------------------------------------
@@ -70,7 +74,7 @@ AUTHENTICATION_BACKENDS = (
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_AUTHENTICATION_METHOD = 'username_email'
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'http'
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
