@@ -21,6 +21,8 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-)=gx8&dg4@=ya3
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
+    'vmquan2200.pythonanywhere.com',
+    'www.vmquan2200.pythonanywhere.com',
     'elonmust.pythonanywhere.com',
     'www.elonmust.pythonanywhere.com',
     'localhost',
@@ -28,6 +30,7 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://vmquan2200.pythonanywhere.com',
     'https://elonmust.pythonanywhere.com',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
@@ -163,7 +166,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # EMAIL (AN TOÀN NHẤT TRÊN PYTHONANYWHERE)
 # --------------------------------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'Học Lập Trình <no-reply@elonmust.pythonanywhere.com>'
+DEFAULT_FROM_EMAIL = 'Học Lập Trình <no-reply@vmquan2200.pythonanywhere.com>'
 
 # --------------------------------------------------
 # DEFAULT PK
