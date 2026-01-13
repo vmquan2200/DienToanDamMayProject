@@ -1,0 +1,23 @@
+runtime: python310
+env: flex
+
+runtime_config:
+  operating_system: ubuntu22
+
+entrypoint: gunicorn -b :$PORT mycourse.wsgi
+
+manual_scaling:
+  instances: 1
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+env_variables:
+  DJANGO_DEBUG: "False"
+  # Bạn nên đổi SECRET_KEY bảo mật hơn khi deploy thật
+  DJANGO_SECRET_KEY: "gcp-student-secret-key-replace-me"
+
+beta_settings:
+  cloud_sql_instances: [] # Điền connection name nếu dùng Cloud SQL

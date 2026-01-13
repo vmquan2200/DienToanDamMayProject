@@ -29,6 +29,12 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# Thêm tên miền của Google App Engine nếu có
+if os.environ.get('GAE_APPLICATION'):
+    ALLOWED_HOSTS.append(f"{os.environ.get('GOOGLE_CLOUD_PROJECT')}.appspot.com")
+    ALLOWED_HOSTS.append(f"{os.environ.get('GOOGLE_CLOUD_PROJECT')}.df.r.appspot.com")
+
+
 CSRF_TRUSTED_ORIGINS = [
     'https://vmquan2200.pythonanywhere.com',
     'https://elonmust.pythonanywhere.com',
