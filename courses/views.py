@@ -1,31 +1,27 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Course
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
-from .models import Cart
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Course, Cart, Payment, Review
-from django.shortcuts import redirect, get_object_or_404
-import qrcode
-import io
-import base64
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.contrib.auth.models import User
-from django.db.models import Sum, Avg
+from django.contrib.auth import login as auth_login, get_user_model, logout
+from django.db.models import Sum, Avg, Count, Q, F
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import Contact
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound
-from django.shortcuts import redirect
-from django.contrib.auth import login as auth_login, get_user_model
-import os
-from allauth.account.models import EmailConfirmation
-from django.conf import settings
-from .models import LearningPathEnrollment
 from django.core.signing import dumps, loads, BadSignature, SignatureExpired
 from django.urls import reverse
+from django.core.paginator import Paginator
+from django.contrib.admin.views.decorators import staff_member_required
+import qrcode
+import io
+import base64
+import os
+from allauth.account.models import EmailConfirmation
+from .models import (
+    Course, Cart, Payment, Review, Contact, LearningPathEnrollment,
+    LearningPath, WeeklySchedule, DailyTask, ForumPost, PostLike, PostComment
+)
+from .forms import ReviewForm
 
 def home(request):
     category = request.GET.get('category', '')
@@ -51,7 +47,6 @@ def home(request):
     else:
         courses = courses.order_by('-created_at')
     # Paginate courses (9 per page)
-    from django.core.paginator import Paginator
     page_number = request.GET.get('page', 1)
     paginator = Paginator(courses, 9)
     courses = paginator.get_page(page_number)
@@ -75,29 +70,6 @@ def home(request):
         'sort': sort,
         **category_counts  # Truyền tất cả counts vào template
     })
-
-def course_detail(request, course_id):
-    # Lấy khóa học theo id, nếu không có thì show lỗi 404
-    course = get_object_or_404(Course, id=course_id)
-    
-    # Kiểm tra user đã mua khóa học chưa
-    user_has_purchased = False
-    if request.user.is_authenticated:
-        user_has_purchased = Payment.objects.filter(
-            user=request.user, 
-            course=course, 
-            status='completed'
-        ).exists()
-    
-    course = get_object_or_404(Course, id=course_id)
-    return render(request, 'courses/course_detail.html', {'course': course})
-
-
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import Course, Cart
 
 @login_required
 def add_to_cart(request, course_id):
@@ -281,46 +253,48 @@ def payment_course_view(request):
 @login_required
 def payment_confirm_view(request):
     """Handle user-confirmed payments from the `payment_course` page.
-
-    For a simple flow, when the user clicks "Tôi đã thanh toán" we mark
-    all cart items as paid (status='completed') and grant access by
-    creating Payment records. In production you should verify the
-    payment via gateway API/webhook and only mark as completed after
-    successful verification.
+    
+    User submits payment with transaction_id, system creates Payment records
+    with status='pending' for admin to review and approve.
     """
     if request.method != 'POST':
         return redirect('payment_course')
 
     payment_method = request.POST.get('payment_method') or 'unknown'
+    transaction_id = request.POST.get('transaction_id', '').strip()
 
     cart_items = Cart.objects.filter(user=request.user)
     if not cart_items.exists():
         messages.warning(request, 'Giỏ hàng của bạn đang trống!')
         return redirect('course_list')
 
-    # Instead of immediately marking payments as completed, send an
-    # activation email with a signed token. The user must click the link
-    # in their email to actually activate and create the Payment records.
-    data = {
-        'user': request.user.pk,
-        'courses': list(cart_items.values_list('course_id', flat=True)),
-        'payment_method': payment_method,
-    }
+    # Validate transaction_id for MoMo and Banking
+    if payment_method in ('momo', 'banking') and not transaction_id:
+        messages.error(request, 'Vui lòng nhập mã giao dịch!')
+        return redirect('payment_course')
 
-    token = dumps(data, salt='payment-activation')
-    activation_url = request.build_absolute_uri(reverse('activate_payment', args=[token]))
+    # Create Payment records with status='pending' for admin approval
+    created_payments = []
+    for item in cart_items:
+        payment = Payment.objects.create(
+            user=request.user,
+            course=item.course,
+            amount=item.course.price,
+            payment_method=payment_method,
+            status='pending',
+            transaction_id=transaction_id if transaction_id else None,
+        )
+        created_payments.append(payment)
 
-    subject = 'Xác nhận thanh toán - Học Lập Trình'
-    message = (
-        f'Chúng tôi đã nhận yêu cầu xác nhận thanh toán của bạn.\n'
-        f'Vui lòng bấm vào đường dẫn bên dưới để kích hoạt khóa học:\n\n{activation_url}\n\n'
-        'Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này.'
+    # Remove cart items after creating pending payments
+    cart_items.delete()
+
+    messages.success(
+        request, 
+        f'Đã gửi yêu cầu thanh toán cho {len(created_payments)} khóa học. '
+        'Vui lòng chờ admin xác nhận. Bạn sẽ nhận được email khi thanh toán được xác nhận.'
     )
-
-    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [request.user.email])
-
-    messages.success(request, 'Chúng tôi đã gửi email xác nhận. Vui lòng kiểm tra hộp thư để kích hoạt khóa học.')
-    return redirect('payment_course')
+    return redirect('my_courses')
 
 
 def activate_payment(request, token):
@@ -487,19 +461,6 @@ def admin_dashboard(request):
 # Trang About
 def about(request):
     return render(request, 'courses/about.html')
-# Trang Contact
-def contact(request):
-    if request.method == 'POST':
-        # Xử lý form liên hệ (có thể lưu vào database hoặc gửi email)
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        
-        # Hiển thị thông báo thành công
-        messages.success(request, 'Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.')
-        return redirect('contact')
-    
-    return render(request, 'courses/contact.html')
 
 def handler404(request, exception):
     return render(request, 'courses/404.html', status=404)
@@ -692,57 +653,66 @@ def contact(request):
 @login_required
 # Trang tổng quan người dùng
 def user_dashboard(request):
-    # Lấy các khóa học đã mua
-    purchased_courses = Course.objects.filter(
-        payment__user=request.user, 
-        payment__status='completed'
-    ).distinct()
-    
-    # Lấy các khóa học trong giỏ hàng
-    cart_courses = Course.objects.filter(
-        cart__user=request.user
-    )
-    
-    # Lấy lịch sử thanh toán
-    payment_history = Payment.objects.filter(
-        user=request.user
-    ).select_related('course').order_by('-created_at')[:10]
-    
-    # Lấy bài viết forum của user
-    user_posts = ForumPost.objects.filter(
-        author=request.user
-    ).order_by('-created_at')[:5]
-    
-    # Lấy reviews của user
-    user_reviews = Review.objects.filter(
-        user=request.user
-    ).select_related('course').order_by('-created_at')[:5]
-    
-    # Thống kê cá nhân
-    user_stats = {
-        'total_courses': purchased_courses.count(),
-        'total_spent': Payment.objects.filter(
-            user=request.user, 
-            status='completed'
-        ).aggregate(Sum('amount'))['amount__sum'] or 0,
-        'courses_in_cart': cart_courses.count(),
-        'total_posts': ForumPost.objects.filter(author=request.user).count(),
-        'total_reviews': Review.objects.filter(user=request.user).count(),
-    }
-    
-    # Lấy enrollments (lộ trình được gán)
-    from .models import LearningPathEnrollment
-    enrollments = LearningPathEnrollment.objects.filter(user=request.user).select_related('learning_path__course', 'assigned_by')
+    try:
+        # Lấy các khóa học đã mua
+        purchased_courses = Course.objects.filter(
+            payment__user=request.user, 
+            payment__status='completed'
+        ).distinct()
+        
+        # Lấy các khóa học trong giỏ hàng
+        cart_courses = Course.objects.filter(
+            cart__user=request.user
+        )
+        
+        # Lấy lịch sử thanh toán
+        payment_history = Payment.objects.filter(
+            user=request.user
+        ).select_related('course').order_by('-created_at')[:10]
+        
+        # Lấy bài viết forum của user
+        user_posts = ForumPost.objects.filter(
+            author=request.user
+        ).order_by('-created_at')[:5]
+        
+        # Lấy reviews của user
+        user_reviews = Review.objects.filter(
+            user=request.user
+        ).select_related('course').order_by('-created_at')[:5]
+        
+        # Thống kê cá nhân
+        user_stats = {
+            'total_courses': purchased_courses.count(),
+            'total_spent': Payment.objects.filter(
+                user=request.user, 
+                status='completed'
+            ).aggregate(Sum('amount'))['amount__sum'] or 0,
+            'courses_in_cart': cart_courses.count(),
+            'total_posts': ForumPost.objects.filter(author=request.user).count(),
+            'total_reviews': Review.objects.filter(user=request.user).count(),
+        }
+        
+        # Lấy enrollments (lộ trình được gán)
+        enrollments = LearningPathEnrollment.objects.filter(
+            user=request.user
+        ).select_related('learning_path__course', 'assigned_by')
 
-    return render(request, 'courses/user_dashboard.html', {
-        'purchased_courses': purchased_courses,
-        'cart_courses': cart_courses,
-        'payment_history': payment_history,
-        'user_posts': user_posts,
-        'user_reviews': user_reviews,
-        'user_stats': user_stats,
-        'enrollments': enrollments,
-    })
+        return render(request, 'courses/user_dashboard.html', {
+            'purchased_courses': purchased_courses,
+            'cart_courses': cart_courses,
+            'payment_history': payment_history,
+            'user_posts': user_posts,
+            'user_reviews': user_reviews,
+            'user_stats': user_stats,
+            'enrollments': enrollments,
+        })
+    except Exception as e:
+        # Log error và hiển thị trang lỗi
+        import traceback
+        print(f"Error in user_dashboard: {e}")
+        print(traceback.format_exc())
+        messages.error(request, f'Có lỗi xảy ra: {str(e)}')
+        return redirect('course_list')
 
 
 @login_required
@@ -754,10 +724,6 @@ def my_courses(request):
     ).distinct()
     
     return render(request, 'courses/my_courses.html', {'courses': paid_courses})
-
-
-from django.contrib.auth import logout
-from django.shortcuts import redirect
 
 @login_required
 def my_schedule(request, enrollment_id):
@@ -810,11 +776,6 @@ def custom_logout(request):
         return redirect('course_list')
     return redirect('course_list')
 
-
-
-from .forms import ReviewForm
-from .models import Review
-from django.http import JsonResponse
 # Tạo view chi tiết khóa học với hiển thị đánh giá và form đánh giá
 def course_detail(request, course_id):
     course = get_object_or_404(Course, id=course_id)
@@ -906,10 +867,6 @@ def submit_review(request, course_id):
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
-
-from .models import ForumPost, PostLike, PostComment
-from django.http import JsonResponse
-from django.db.models import Count, Q, F
 # Danh sách bài viết diễn đàn với tìm kiếm và lọc tags
 def forum_list(request):
     search_query = request.GET.get('q', '')
@@ -1100,7 +1057,6 @@ def forum_detail(request, post_id):
     post.refresh_from_db(fields=['views'])
 
     # Paginate comments for the post (used by template's load-more)
-    from django.core.paginator import Paginator
     comments_qs = post.comments.all().order_by('created_at')
     page_number = request.GET.get('cpage', 1)
     paginator = Paginator(comments_qs, 5)
@@ -1227,14 +1183,6 @@ def remove_from_cart(request, course_id):
 
     messages.success(request, f'Đã xóa "{course.title}" khỏi giỏ hàng!')
     return redirect('view_cart')
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.http import JsonResponse
-from django.db.models import Avg, Count, Sum
-from .models import Course, Payment, Review, LearningPath, WeeklySchedule, DailyTask
 
 @login_required
 def forum_delete(request, post_id):

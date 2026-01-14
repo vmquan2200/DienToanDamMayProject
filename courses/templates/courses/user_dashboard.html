@@ -120,7 +120,8 @@
                     Thao tác nhanh
                 </h2>
                 <div class="quick-actions-grid">
-                    <a href="{% url 'course_learning_path' current_course.id|default:'1' %}" class="action-card">
+                    {% if purchased_courses|length > 0 %}
+                    <a href="{% url 'learning_path' purchased_courses.0.id %}" class="action-card">
                         <div class="action-icon continue">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polygon points="5 3 19 12 5 21 5 3"/>
@@ -128,9 +129,22 @@
                         </div>
                         <div class="action-content">
                             <h3>Tiếp tục học</h3>
-                            <p>{{ current_course.title|default:"Khóa học hiện tại" }}</p>
+                            <p>{{ purchased_courses.0.title }}</p>
                         </div>
                     </a>
+                    {% else %}
+                    <a href="{% url 'course_list' %}" class="action-card">
+                        <div class="action-icon continue">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="action-content">
+                            <h3>Khám phá khóa học</h3>
+                            <p>Bắt đầu học ngay hôm nay</p>
+                        </div>
+                    </a>
+                    {% endif %}
                     
                     <a href="{% url 'my_courses' %}" class="action-card">
                         <div class="action-icon courses">
@@ -144,7 +158,7 @@
                         </div>
                     </a>
                     
-                    <a href="{% url 'cart' %}" class="action-card">
+                    <a href="{% url 'view_cart' %}" class="action-card">
                         <div class="action-icon cart">
                             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <circle cx="9" cy="21" r="1"/>
@@ -274,7 +288,7 @@
                                     Chứng chỉ
                                 </a>
                                 {% else %}
-                                <a href="{% url 'course_learning_path' course.id %}" class="btn-resume">
+                                <a href="{% url 'learning_path' course.id %}" class="btn-resume">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <polygon points="5 3 19 12 5 21 5 3"/>
                                     </svg>

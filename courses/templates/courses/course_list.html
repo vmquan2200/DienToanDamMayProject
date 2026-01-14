@@ -328,20 +328,6 @@
     color: var(--accent);
     text-decoration: none;
     font-weight: 500;
-        
-            // When user changes sort, navigate to the prepared URL (option values are full URLs)
-            sortSelect.addEventListener('change', function() {
-                const target = this.value;
-                if (!target) return;
-                // If value is a full URL, navigate to it; otherwise build one
-                try {
-                    const u = new URL(target);
-                    window.location.href = u.toString();
-                } catch (e) {
-                    // fallback: treat as path
-                    window.location.href = target;
-                }
-            });
     padding: 6px 12px;
     border-radius: 8px;
     transition: var(--transition);
@@ -435,15 +421,6 @@ body {
     font-size: 2.5rem;
     font-weight: 800;
     margin-bottom: 15px;
-    
-        // Fallback: ensure category/tag filter anchors always trigger navigation
-        document.querySelectorAll('.filter-tags a, .category-card').forEach(a => {
-            a.addEventListener('click', function(e) {
-                // Allow normal behavior but force navigation as a fallback
-                e.preventDefault();
-                window.location.href = this.href;
-            });
-        });
 }
 
 .hero-description {
@@ -1307,11 +1284,50 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => { notification.style.animation = 'cn-out 0.3s ease-out'; setTimeout(() => notification.remove(), 300); }, 3000);
     }
 
+    // Handle add-to-cart submissions via delegation to avoid page reload
     document.addEventListener('submit', function(e) {
         const form = e.target;
         if (!form || !form.matches) return;
         if (!form.matches('form.action-form[data-ajax="add-to-cart"]')) return;
 
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const url = form.action;
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        if (submitBtn) submitBtn.disabled = true;
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: Object.assign({ 'X-Requested-With': 'XMLHttpRequest' }, csrftoken ? { 'X-CSRFToken': csrftoken } : {})
+        }).then(response => {
+            if (response.status === 403) {
+                // Not authorized or CSRF issue — redirect to login
+                window.location.href = '{% url "account_login" %}?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+                throw new Error('Forbidden');
+            }
+            if (!response.ok) throw new Error('Network error');
+            return response.json().catch(() => ({ success: true }));
+        }).then(data => {
+            const msg = (data && data.message) ? data.message : 'Đã thêm vào giỏ hàng';
+            showCartNotification(msg);
+            if (data && typeof data.cart_count !== 'undefined') {
+                const cartCountEl = document.querySelector('.cart-count');
+                if (cartCountEl) cartCountEl.textContent = data.cart_count;
+            }
+        }).catch(err => {
+            if (err && err.message !== 'Forbidden') {
+                console.error(err);
+                showCartNotification('Không thể thêm vào giỏ hàng');
+            }
+        }).finally(() => {
+            if (submitBtn) submitBtn.disabled = false;
+        });
+    });
     
     // AJAX loader: fetch results and replace the `#courses-results` container
     async function loadCoursesViaAjax(url) {
@@ -1379,33 +1395,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 loadCoursesViaAjax(url);
             }
         }
-    });
-            body: formData,
-            credentials: 'same-origin',
-            headers: Object.assign({ 'X-Requested-With': 'XMLHttpRequest' }, csrftoken ? { 'X-CSRFToken': csrftoken } : {})
-        }).then(response => {
-            if (response.status === 403) {
-                // Not authorized or CSRF issue — redirect to login
-                window.location.href = '{% url "account_login" %}?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-                throw new Error('Forbidden');
-            }
-            if (!response.ok) throw new Error('Network error');
-            return response.json().catch(() => ({ success: true }));
-        }).then(data => {
-            const msg = (data && data.message) ? data.message : 'Đã thêm vào giỏ hàng';
-            showCartNotification(msg);
-            if (data && typeof data.cart_count !== 'undefined') {
-                const cartCountEl = document.querySelector('.cart-count');
-                if (cartCountEl) cartCountEl.textContent = data.cart_count;
-            }
-        }).catch(err => {
-            if (err && err.message !== 'Forbidden') {
-                console.error(err);
-                showCartNotification('Không thể thêm vào giỏ hàng');
-            }
-        }).finally(() => {
-            if (submitBtn) submitBtn.disabled = false;
-        });
     });
 });
 </script>

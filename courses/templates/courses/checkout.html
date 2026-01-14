@@ -13,7 +13,7 @@
                     <span>Trang chủ</span>
                 </a>
                 <div class="crumb-separator">›</div>
-                <a href="/cart/" class="crumb">
+                <a href="{% url 'view_cart' %}" class="crumb">
                     <span>🛒</span>
                     <span>Giỏ hàng</span>
                 </a>
@@ -55,7 +55,7 @@
                 <div class="section-card">
                     <div class="section-header">
                         <h3>📦 Đơn hàng của bạn</h3>
-                        <a href="/cart/" class="edit-link">Sửa</a>
+                        <a href="{% url 'view_cart' %}" class="edit-link">Sửa</a>
                     </div>
                     
                     <div class="order-items">

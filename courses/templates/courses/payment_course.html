@@ -277,11 +277,34 @@
                     </div>
                 </div>
                 
+                {% if payment_method == 'momo' or payment_method == 'banking' %}
+                <div class="transaction-id-section">
+                    <label for="transaction_id" class="transaction-label">
+                        <span>🔢</span>
+                        <span>Mã giao dịch</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="transaction_id" 
+                        name="transaction_id" 
+                        class="transaction-input" 
+                        placeholder="Nhập mã giao dịch từ MoMo/Banking"
+                        required
+                    />
+                    <p class="transaction-hint">
+                        💡 Sau khi thanh toán thành công, bạn sẽ nhận được mã giao dịch. Vui lòng nhập mã này để xác nhận.
+                    </p>
+                </div>
+                {% endif %}
+                
                 <div class="payment-actions">
                     <form method="post" action="{% url 'payment_confirm' %}" class="action-form">
                         {% csrf_token %}
                         <input type="hidden" name="payment_method" value="{{ payment_method }}" />
-                        <button type="submit" class="btn-confirm">
+                        {% if payment_method == 'momo' or payment_method == 'banking' %}
+                        <input type="hidden" name="transaction_id" id="transaction_id_hidden" />
+                        {% endif %}
+                        <button type="submit" class="btn-confirm" id="submit-btn">
                             <span>✅</span>
                             <span>Tôi đã thanh toán</span>
                         </button>
@@ -919,6 +942,48 @@
     color: var(--text-light);
 }
 
+/* Transaction ID Section */
+.transaction-id-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: #f0f9ff;
+    border-radius: var(--radius-sm);
+    border: 2px solid #bae6fd;
+}
+
+.transaction-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
+.transaction-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.transaction-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.transaction-hint {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.5;
+}
+
 /* Payment Actions */
 .payment-actions {
     display: flex;
@@ -1219,6 +1284,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmForm = document.querySelector('.action-form');
     if (confirmForm) {
         confirmForm.addEventListener('submit', function(e) {
+            // Copy transaction_id to hidden field if exists
+            const transactionInput = document.getElementById('transaction_id');
+            const transactionHidden = document.getElementById('transaction_id_hidden');
+            if (transactionInput && transactionHidden) {
+                transactionHidden.value = transactionInput.value.trim();
+            }
+            
+            // Validate transaction_id for MoMo and Banking
+            const paymentMethod = '{{ payment_method }}';
+            if ((paymentMethod === 'momo' || paymentMethod === 'banking') && transactionInput) {
+                const transactionId = transactionInput.value.trim();
+                if (!transactionId) {
+                    e.preventDefault();
+                    showNotification('Vui lòng nhập mã giao dịch!', 'error');
+                    transactionInput.focus();
+                    return false;
+                }
+            }
+            
             // mark that after any redirect/return we should scroll to breadcrumb
             try {
                 sessionStorage.setItem('scroll_to_breadcrumb', '1');

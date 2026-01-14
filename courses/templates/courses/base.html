@@ -82,6 +82,19 @@
             transform: translateY(-2px);
         }
 
+        .admin-link {
+            background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+            color: white !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .admin-link:hover {
+            background: linear-gradient(135deg, #d97706, #b45309) !important;
+            box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+
         .user-info {
             color: #cbd5e1;
             font-weight: 500;
@@ -679,14 +692,17 @@
             </div>
 
             {% if user.is_authenticated %}
-                <a href="/cart/">🛒 Giỏ hàng</a>
+                <a href="{% url 'view_cart' %}">🛒 Giỏ hàng</a>
                 <a href="/my-courses/">🎓 Khóa học của tôi</a>
                 <a href="/my-dashboard/">📊 Dashboard</a>
+                {% if user.is_staff %}
+                    <a href="/secret-admin/" class="admin-link" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-weight: 600;">⚙️ Admin Panel</a>
+                {% endif %}
             {% endif %}
         </div>
         <div>
             {% if user.is_authenticated %}
-                <span class="user-info">Xin chào, {{ user.username }}!</span>
+                <span class="user-info">Xin chào, {{ user.username }}!{% if user.is_staff %} 👑{% endif %}</span>
                 <a href="/accounts/logout/">🚪 Đăng xuất</a>
             {% else %}
                 <a href="/accounts/login/">🔐 Đăng nhập</a>
@@ -781,7 +797,14 @@
     <script>
             // Append #breadcrumb to safe internal links so destination pages auto-scroll to breadcrumb
             (function() {
-                const skipPrefixes = ['/accounts', '/admin', '/static', '/media'];
+                // Skip this script entirely on admin pages
+                if (window.location.pathname.startsWith('/secret-admin/') || 
+                    window.location.pathname.startsWith('/admin/') ||
+                    window.location.pathname.startsWith('/grappelli/')) {
+                    return;
+                }
+                
+                const skipPrefixes = ['/accounts', '/admin', '/secret-admin', '/grappelli', '/static', '/media'];
                 // file extensions to skip (images, assets, documents)
                 const skipExtRegex = /\.[a-zA-Z0-9]{1,5}(?:$|[?#])/;
 
@@ -825,6 +848,13 @@
 
             // Run on load: if opened from internal link or URL has #breadcrumb, scroll to breadcrumb
             window.addEventListener('load', function() {
+                // Skip on admin pages
+                if (window.location.pathname.startsWith('/secret-admin/') || 
+                    window.location.pathname.startsWith('/admin/') ||
+                    window.location.pathname.startsWith('/grappelli/')) {
+                    return;
+                }
+                
                 var isInternal = false;
                 try {
                     isInternal = document.referrer && document.referrer.indexOf(location.origin) === 0;

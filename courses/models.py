@@ -64,6 +64,17 @@ class Payment(models.Model):
         ('banking', 'Chuyển khoản'),
         ('cod', 'Thanh toán khi nhận khóa học')
     ])
+    transaction_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Mã giao dịch")
+    approved_at = models.DateTimeField(null=True, blank=True, verbose_name="Thời gian xác nhận")
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_payments', verbose_name="Người xác nhận")
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Thanh toán"
+        verbose_name_plural = "Thanh toán"
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.course.title} - {self.get_status_display()}"
 
     
 # Tạo model Liên hệ

@@ -10,7 +10,6 @@ urlpatterns = [
     path('course/<int:course_id>/', views.course_detail, name='course_detail'),
     path('add-to-cart/<int:course_id>/', views.add_to_cart, name='add_to_cart'),
     path('cart/', views.view_cart, name='view_cart'),
-    path('cart/', views.view_cart, name='cart'),
     path('search/', views.search_courses, name='search'),
     path('checkout/', views.checkout, name='checkout'),
     path('payment-success/', views.payment_success, name='payment_success'),
@@ -42,7 +41,6 @@ urlpatterns = [
     path('recent-activity/', views.recent_activity, name='recent_activity'),
     path('remove-from-cart/<int:course_id>/', views.remove_from_cart, name='remove_from_cart'),
     path('course/<int:course_id>/learning-path/', views.learning_path, name='learning_path'),
-    path('course/<int:course_id>/learning-path/', views.learning_path, name='course_learning_path'),
     path('toggle-task/<int:task_id>/', views.toggle_task_completion, name='toggle_task_completion'),
     path('admin/learning-path-assign/', views.admin_learning_path_assign, name='admin_learning_path_assign'),
     path('my-schedule/<int:enrollment_id>/', views.my_schedule, name='my_schedule'),
@@ -66,15 +64,8 @@ urlpatterns = [
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
 
-        # THÊM URL CHO LOGIN
+    # THÊM URL CHO LOGIN
     # Redirect plain /login/ to allauth's login to ensure the expected
     # `login` field in the template is handled correctly by allauth.
     path('login/', RedirectView.as_view(url='/accounts/login/'), name='login'),
-    
-    # URLs reset password
-    path('password-reset/', auth_views.PasswordResetView.as_view(
-        template_name='registration/password_reset_form.html',
-        email_template_name='registration/password_reset_email.html',
-        subject_template_name='registration/password_reset_subject.txt'
-    ), name='password_reset'),
 ]

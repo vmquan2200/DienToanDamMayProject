@@ -22,13 +22,16 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('grappelli', RedirectView.as_view(url='/grappelli/')),
-    # Redirect the root grappelli path to the admin UI (Grappelli itself doesn't provide a root view)
-    path('grappelli/', RedirectView.as_view(url='/secret-admin/')),
     path('grappelli/', include('grappelli.urls')),
     path('secret-admin/', admin.site.urls),
-    path('', include('courses.urls')),  # ← Thêm dòng này để bao gồm URLs từ app courses 
-    path('accounts/', include('allauth.urls')),  # ← Thêm dòng này để bao gồm URLs từ allauth 
+    path('', include('courses.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # Serve static files in development
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    # Serve static files in development
+    from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+    urlpatterns += staticfiles_urlpatterns()
