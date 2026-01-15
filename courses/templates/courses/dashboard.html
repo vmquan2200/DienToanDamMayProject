@@ -259,7 +259,9 @@
     --success: #10b981;
     --danger: #ef4444;
     --warning: #f59e0b;
-    --text: #1e293b;
+    --text: #0f172a;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
     --muted: #64748b;
     --light: #f8fafc;
     --border: #e2e8f0;
@@ -329,14 +331,14 @@
 }
 
 .crumb.current {
-    color: var(--text);
+    color: #0f172a;
     font-weight: 600;
     cursor: default;
     background: #f8fafc;
 }
 
 .crumb-separator {
-    color: var(--muted);
+    color: #64748b;
 }
 
 /* Dashboard Page */
@@ -459,7 +461,7 @@
 }
 
 .section-header h2 {
-    color: var(--text);
+    color: #0f172a;
     font-size: 1.5rem;
     font-weight: 800;
     display: flex;
@@ -548,7 +550,7 @@
 }
 
 .course-title a {
-    color: var(--text);
+    color: #0f172a;
     text-decoration: none;
     font-size: 1.4rem;
     font-weight: 700;
@@ -573,15 +575,15 @@
 }
 
 .progress-label {
-    color: var(--muted);
+    color: #1e293b;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .progress-percent {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 1.1rem;
+    color: #3b82f6;
+    font-weight: 800;
+    font-size: 1.2rem;
 }
 
 .progress-bar {
@@ -613,8 +615,9 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: var(--muted);
+    color: #334155;
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .meta-icon {
@@ -691,17 +694,19 @@
 }
 
 .no-courses h3 {
-    color: var(--text);
+    color: #0f172a;
     margin-bottom: 15px;
     font-size: 1.8rem;
+    font-weight: 800;
 }
 
 .no-courses p {
-    color: var(--muted);
+    color: #475569;
     max-width: 500px;
     margin: 0 auto 30px;
     line-height: 1.6;
     font-size: 1.1rem;
+    font-weight: 500;
 }
 
 .btn-primary {
@@ -740,9 +745,10 @@
 }
 
 .sidebar-section h3 {
-    color: var(--text);
+    color: #0f172a;
     margin-bottom: 20px;
     font-size: 1.2rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -769,14 +775,15 @@
 }
 
 .quick-stat .stat-label {
-    color: var(--muted);
+    color: #475569;
     font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .quick-stat .stat-value {
-    color: var(--text);
-    font-weight: 700;
-    font-size: 1rem;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 1.1rem;
 }
 
 /* Activity List */
@@ -815,13 +822,14 @@
 .activity-icon {
     font-size: 1.3rem;
     flex-shrink: 0;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--light);
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
     border-radius: 10px;
+    border: 1px solid #e2e8f0;
 }
 
 .activity-content {
@@ -829,38 +837,42 @@
 }
 
 .activity-text {
-    color: var(--text);
-    font-size: 0.9rem;
+    color: #0f172a;
+    font-size: 0.95rem;
+    font-weight: 600;
     line-height: 1.4;
     margin-bottom: 5px;
 }
 
 .activity-time {
-    color: var(--muted);
-    font-size: 0.8rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .no-activity {
     text-align: center;
     padding: 30px 0;
-    color: var(--muted);
-    font-size: 0.9rem;
+    color: #475569;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 .view-all-link {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    color: var(--accent);
+    color: #3b82f6;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.9rem;
     transition: var(--transition);
 }
 
 .view-all-link:hover {
     gap: 12px;
-    color: var(--accent-2);
+    color: #2563eb;
+    text-decoration: underline;
 }
 
 /* Recommendations */
@@ -886,24 +898,27 @@
 .recommendation-category {
     display: inline-block;
     padding: 6px 12px;
-    background: rgba(59, 130, 246, 0.1);
-    color: var(--accent);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15));
+    color: #2563eb;
     border-radius: 20px;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
     margin-bottom: 10px;
+    border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
 .recommendation-item h4 {
-    color: var(--text);
+    color: #0f172a;
     font-size: 1rem;
+    font-weight: 700;
     margin-bottom: 8px;
     line-height: 1.3;
 }
 
 .recommendation-item p {
-    color: var(--muted);
+    color: #475569;
     font-size: 0.85rem;
+    font-weight: 500;
     line-height: 1.4;
     margin-bottom: 15px;
 }
@@ -929,8 +944,9 @@
 .no-recommendations {
     text-align: center;
     padding: 30px 0;
-    color: var(--muted);
-    font-size: 0.9rem;
+    color: #475569;
+    font-size: 0.95rem;
+    font-weight: 600;
 }
 
 /* Achievements Grid */
@@ -968,15 +984,16 @@
 }
 
 .achievement-title {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     text-align: center;
-    color: var(--muted);
+    color: #475569;
     line-height: 1.2;
 }
 
 .achievement-item.achieved .achievement-title {
-    color: var(--warning);
+    color: #d97706;
+    font-weight: 800;
 }
 
 /* Responsive */

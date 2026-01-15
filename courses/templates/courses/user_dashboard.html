@@ -507,14 +507,14 @@
 }
 
 .crumb.current {
-    color: var(--text-primary);
-    font-weight: 600;
+    color: #0f172a;
+    font-weight: 700;
     cursor: default;
     background: #f8fafc;
 }
 
 .crumb-separator {
-    color: var(--text-secondary);
+    color: #64748b;
 }
 
 /* Rest of your existing CSS stays exactly the same... */
@@ -528,9 +528,9 @@
     --warning: #f59e0b;
     --warning-light: #fef3c7;
     --danger: #ef4444;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --text-light: #94a3b8;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;
+    --text-light: #64748b;
     --border: #e2e8f0;
     --border-light: #f1f5f9;
     --bg-card: #ffffff;
@@ -714,12 +714,17 @@
 /* Section Styles */
 .section-title {
     font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-weight: 800;
+    color: #0f172a !important;
     margin: 0 0 1.5rem;
     display: flex;
     align-items: center;
     gap: 0.75rem;
+}
+
+/* Ensure all section titles and their children have dark text */
+.section-title, .section-title * {
+    color: #0f172a !important;
 }
 
 .section-header {
@@ -798,14 +803,15 @@
 
 .action-content h3 {
     font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a !important;
     margin: 0 0 0.25rem;
 }
 
 .action-content p {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #475569;
     margin: 0;
 }
 
@@ -834,8 +840,8 @@
 
 .activity-time {
     font-size: 0.875rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    color: #475569;
+    font-weight: 600;
     min-width: 50px;
 }
 
@@ -852,21 +858,23 @@
 
 .activity-content h4 {
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a !important;
     margin: 0 0 0.25rem;
 }
 
 .activity-content p {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #475569;
     margin: 0;
 }
 
 .activity-empty {
     text-align: center;
     padding: 2rem;
-    color: var(--text-secondary);
+    color: #475569;
+    font-weight: 600;
     background: var(--bg-light);
     border-radius: var(--radius-md);
     border: 2px dashed var(--border);
@@ -916,9 +924,9 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0f172a !important;
 }
 
 .course-content {
@@ -930,14 +938,15 @@
 
 .course-content h3 {
     font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a !important;
     margin: 0;
 }
 
 .course-content p {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #475569;
     margin: 0;
     line-height: 1.5;
 }
@@ -994,12 +1003,14 @@
 
 .empty-section h3 {
     font-size: 1.25rem;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a;
     margin: 0 0 0.5rem;
 }
 
 .empty-section p {
-    color: var(--text-secondary);
+    color: #475569;
+    font-weight: 500;
     margin-bottom: 1.5rem;
 }
 
@@ -1040,13 +1051,20 @@
 .profile-summary h3,
 .forum-activity h3,
 .recent-reviews h3 {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a !important;
     margin: 0 0 1.25rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+/* Ensure sidebar titles are always dark */
+.profile-summary h3 *,
+.forum-activity h3 *,
+.recent-reviews h3 * {
+    color: #0f172a !important;
 }
 
 .summary-info {
@@ -1066,13 +1084,14 @@
 
 .info-label {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-weight: 600;
+    color: #475569;
 }
 
 .info-value {
     font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a;
 }
 
 .role-badge {
@@ -1125,15 +1144,16 @@
 .forum-stat .stat-number {
     display: block;
     font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-weight: 800;
+    color: #0f172a;
     line-height: 1;
 }
 
 .forum-stat .stat-label {
     display: block;
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    font-weight: 600;
+    color: #475569;
     margin-top: 0.25rem;
 }
 
@@ -1143,8 +1163,8 @@
 
 .recent-posts h4 {
     font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-weight: 700;
+    color: #334155;
     margin: 0 0 0.75rem;
 }
 
@@ -1165,8 +1185,8 @@
 
 .post-preview h5 {
     font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a;
     margin: 0 0 0.25rem;
 }
 
@@ -1174,7 +1194,8 @@
     display: flex;
     gap: 0.75rem;
     font-size: 0.75rem;
-    color: var(--text-light);
+    font-weight: 500;
+    color: #64748b;
 }
 
 .btn-new-post {
@@ -1216,8 +1237,8 @@
 
 .review-course {
     font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: #0f172a;
 }
 
 .review-stars {
@@ -1227,20 +1248,23 @@
 
 .review-excerpt {
     font-size: 0.8125rem;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #475569;
     margin: 0 0 0.5rem;
     line-height: 1.4;
 }
 
 .review-date {
     font-size: 0.75rem;
-    color: var(--text-light);
+    font-weight: 500;
+    color: #64748b;
 }
 
 .empty-reviews {
     text-align: center;
     padding: 1.5rem;
-    color: var(--text-secondary);
+    color: #475569;
+    font-weight: 600;
     font-size: 0.875rem;
 }
 

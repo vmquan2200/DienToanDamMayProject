@@ -215,18 +215,48 @@
     }
     
     .stats-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+        cursor: pointer;
     }
     
     .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
     }
     
-    .primary-card { background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); }
-    .success-card { background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%); }
-    .info-card { background: linear-gradient(135deg, #36b9cc 0%, #258391 100%); }
-    .warning-card { background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%); }
+    .stats-card:active {
+        transform: translateY(-5px) scale(1.01);
+    }
+    
+    .primary-card { 
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        position: relative;
+    }
+    .success-card { 
+        background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%);
+        position: relative;
+    }
+    .info-card { 
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        position: relative;
+    }
+    .warning-card { 
+        background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+        position: relative;
+    }
+    
+    .stats-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .stats-card:hover::after {
+        opacity: 1;
+    }
     
     .card-wave {
         position: absolute;
@@ -238,6 +268,12 @@
         border-radius: 50%;
         transform: rotate(-10deg);
         pointer-events: none;
+        animation: wave 3s ease-in-out infinite;
+    }
+    
+    @keyframes wave {
+        0%, 100% { transform: rotate(-10deg) translateY(0); }
+        50% { transform: rotate(-8deg) translateY(-5px); }
     }
     
     .btn-icon {
@@ -248,19 +284,58 @@
         align-items: center;
         justify-content: center;
         border-radius: 8px;
-        transition: all 0.2s;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-icon::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0));
+        opacity: 0;
+        transition: opacity 0.3s ease;
     }
     
     .btn-icon:hover {
-        transform: scale(1.1);
+        transform: scale(1.2) rotate(5deg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-icon:hover::before {
+        opacity: 1;
+    }
+    
+    .btn-icon:active {
+        transform: scale(1.1) rotate(0deg);
     }
     
     .custom-table tbody tr {
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .custom-table tbody tr::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
     }
     
     .custom-table tbody tr:hover {
         background-color: #f8f9fa;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transform: translateX(4px);
+    }
+    
+    .custom-table tbody tr:hover::before {
+        transform: scaleY(1);
     }
 </style>
 {% endblock %}
