@@ -29,6 +29,11 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+# Cho phép thêm custom domain từ environment variable
+CUSTOM_DOMAIN = os.environ.get('CUSTOM_DOMAIN', '')
+if CUSTOM_DOMAIN:
+    ALLOWED_HOSTS.append(CUSTOM_DOMAIN)
+
 # Thêm tên miền của Google App Engine nếu có
 if os.environ.get('GAE_APPLICATION'):
     ALLOWED_HOSTS.append(f"{os.environ.get('GOOGLE_CLOUD_PROJECT')}.appspot.com")
@@ -41,6 +46,10 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
+
+# Thêm custom domain vào CSRF trusted origins
+if CUSTOM_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{CUSTOM_DOMAIN}')
 
 # --------------------------------------------------
 # APPLICATIONS
@@ -125,14 +134,30 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mycourse.wsgi.application'
 
 # --------------------------------------------------
-# DATABASE (SQLite OK cho PythonAnywhere)
+# DATABASE (PostgreSQL từ Render)
 # --------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import dj_database_url
+
+# Sử dụng database URL từ environment variable
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+if DATABASE_URL:
+    # Sử dụng PostgreSQL từ Render
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Fallback sang SQLite cho development
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # --------------------------------------------------
 # PASSWORD VALIDATION
