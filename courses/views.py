@@ -443,20 +443,172 @@ def add_review(request, course_id):
     
     return redirect('course_detail', course_id=course_id)
 
-@login_required
-# Trang tổng quan admin
+@staff_member_required
 def admin_dashboard(request):
-    if not request.user.is_staff:
-        return redirect('home')
+    pending_payments = Payment.objects.filter(status='pending').select_related('user', 'course').order_by('-created_at')
     
     stats = {
         'total_courses': Course.objects.count(),
         'total_users': User.objects.count(),
-        'total_sales': Payment.objects.aggregate(Sum('amount'))['amount__sum'] or 0,
+        'total_sales': Payment.objects.filter(status='completed').aggregate(Sum('amount'))['amount__sum'] or 0,
         'total_orders': Payment.objects.count(),
+        'pending_orders': pending_payments.count(),
     }
     
-    return render(request, 'courses/admin_dashboard.html', {'stats': stats})
+    return render(request, 'courses/admin_dashboard.html', {
+        'stats': stats,
+        'pending_payments': pending_payments,
+        'today': timezone.now()
+    })
+
+@staff_member_required
+def admin_approve_payment(request, payment_id):
+    if request.method != 'POST':
+        return redirect('admin_dashboard')
+        
+    payment = get_object_or_404(Payment, id=payment_id, status='pending')
+    
+    try:
+        # 1. Cập nhật trạng thái thanh toán
+        payment.status = 'completed'
+        payment.approved_at = timezone.now()
+        payment.approved_by = request.user
+        payment.save()
+        
+        # 2. Kích hoạt lộ trình học tập
+        from .models import LearningPath, WeeklySchedule, DailyTask, Lesson, LearningPathEnrollment
+        from datetime import date as _date
+        
+        course = payment.course
+        user = payment.user
+        
+        # Đảm bảo LearningPath tồn tại
+        learning_path, lp_created = LearningPath.objects.get_or_create(
+            course=course,
+            defaults={
+                'total_weeks': 4,
+                'hours_per_week': 5,
+                'difficulty': 'beginner'
+            }
+        )
+        
+        # Tạo lịch trình hàng tuần nếu chưa có
+        if not WeeklySchedule.objects.filter(learning_path=learning_path).exists():
+            lessons = Lesson.objects.filter(course=course).order_by('order')
+            total_weeks = learning_path.total_weeks or 4
+            
+            weekly_objs = []
+            for w in range(1, total_weeks + 1):
+                ws = WeeklySchedule.objects.create(
+                    learning_path=learning_path,
+                    week_number=w,
+                    title=f'Tuần {w}',
+                    objectives=f'Nội dung tuần {w}',
+                    total_hours=learning_path.hours_per_week or 5
+                )
+                weekly_objs.append(ws)
+            
+            # Phân bổ bài học vào các tuần
+            if lessons.exists():
+                n = lessons.count()
+                per_week = max(1, n // total_weeks)
+                extra = n % total_weeks
+                it = iter(lessons)
+                for i, ws in enumerate(weekly_objs, start=1):
+                    count_this_week = per_week + (1 if i <= extra else 0)
+                    for dnum in range(1, count_this_week + 1):
+                        try:
+                            lesson = next(it)
+                        except StopIteration:
+                            break
+                        DailyTask.objects.create(
+                            weekly_schedule=ws,
+                            day_number=dnum,
+                            title=lesson.title,
+                            description=f'Bài học: {lesson.title}',
+                            duration_minutes=60,
+                            resources=lesson.video_url or ''
+                        )
+            else:
+                for ws in weekly_objs:
+                    DailyTask.objects.create(
+                        weekly_schedule=ws,
+                        day_number=1,
+                        title=f'Bài học tuần {ws.week_number}',
+                        description='Nội dung học tập và video hướng dẫn',
+                        duration_minutes=60,
+                        resources=''
+                    )
+        
+        # 3. Tạo ghi danh (Enrollment)
+        enrollment, created_en = LearningPathEnrollment.objects.get_or_create(
+            user=user,
+            learning_path=learning_path,
+            defaults={
+                'assigned_by': request.user,
+                'start_date': _date.today(),
+                'status': 'active'
+            }
+        )
+        if not created_en:
+            enrollment.status = 'active'
+            if not enrollment.start_date:
+                enrollment.start_date = _date.today()
+            enrollment.assigned_by = request.user
+            enrollment.save()
+        
+        # 4. Gửi email thông báo
+        try:
+            course_list_url = request.build_absolute_uri(reverse('my_courses'))
+            subject = '✅ Thanh toán đã được xác nhận - Khóa học đã được kích hoạt'
+            message = f'''
+Xin chào {user.get_full_name() or user.username}!
+
+Thanh toán của bạn cho khóa học "{course.title}" đã được xác nhận thành công.
+
+📚 THÔNG TIN KHÓA HỌC:
+• Tên khóa học: {course.title}
+• Số tiền: {payment.amount:,.0f} VNĐ
+• Phương thức: {payment.get_payment_method_display()}
+• Mã giao dịch: {payment.transaction_id or 'N/A'}
+• Thời gian xác nhận: {payment.approved_at.strftime('%d/%m/%Y %H:%M')}
+
+🎉 Khóa học đã được kích hoạt và sẵn sàng để bạn bắt đầu học!
+
+Bạn có thể truy cập khóa học tại: {course_list_url}
+
+Chúc bạn học tập hiệu quả!
+
+Trân trọng,
+Đội ngũ Học Lập Trình
+            '''
+            send_mail(
+                subject,
+                message.strip(),
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            print(f"Error sending email: {e}")
+            
+        messages.success(request, f'Đã duyệt thanh toán #{payment.id} thành công!')
+    except Exception as e:
+        messages.error(request, f'Lỗi khi duyệt thanh toán: {str(e)}')
+        
+    return redirect('admin_dashboard')
+
+@staff_member_required
+def admin_reject_payment(request, payment_id):
+    if request.method != 'POST':
+        return redirect('admin_dashboard')
+        
+    payment = get_object_or_404(Payment, id=payment_id, status='pending')
+    payment.status = 'failed'
+    payment.save()
+    
+    messages.warning(request, f'Đã từ chối thanh toán #{payment.id}.')
+    return redirect('admin_dashboard')
 
 # Trang About
 def about(request):
@@ -1311,8 +1463,6 @@ def toggle_task_completion(request, task_id):
         'task_id': task.id
     })
 
-
-from django.contrib.admin.views.decorators import staff_member_required
 
 @staff_member_required
 def admin_learning_path_assign(request):

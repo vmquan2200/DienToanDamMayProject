@@ -1,0 +1,266 @@
+{% extends "courses/base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard | Học Lập Trình{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5 bg-light" style="min-height: 100vh;">
+    <div class="container">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--nav);">
+                    <i class="fas fa-tachometer-alt me-2 text-warning"></i>Admin Dashboard
+                </h2>
+                <p class="text-muted mb-0">Quản lý hệ thống và phê duyệt thanh toán học viên</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white rounded-pill px-4 py-2 shadow-sm border">
+                    <i class="far fa-calendar-alt text-primary me-2"></i>
+                    <span class="fw-medium">{{ today|date:"l, d/m/Y" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden stats-card primary-card">
+                    <div class="card-body p-4 position-relative">
+                        <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                            <div>
+                                <p class="mb-1 text-white-50 fw-medium">Tổng doanh thu</p>
+                                <h3 class="fw-bold mb-0 text-white">{{ stats.total_sales|floatformat:0 }} <span class="fs-6 opacity-75">VNĐ</span></h3>
+                            </div>
+                            <div class="icon-box bg-white bg-opacity-25 text-white rounded-3 p-3">
+                                <i class="fas fa-wallet fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="card-wave"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden stats-card success-card">
+                    <div class="card-body p-4 position-relative">
+                        <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                            <div>
+                                <p class="mb-1 text-white-50 fw-medium">Học viên</p>
+                                <h3 class="fw-bold mb-0 text-white">{{ stats.total_users }}</h3>
+                            </div>
+                            <div class="icon-box bg-white bg-opacity-25 text-white rounded-3 p-3">
+                                <i class="fas fa-users fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="card-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden stats-card info-card">
+                    <div class="card-body p-4 position-relative">
+                        <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                            <div>
+                                <p class="mb-1 text-white-50 fw-medium">Khóa học</p>
+                                <h3 class="fw-bold mb-0 text-white">{{ stats.total_courses }}</h3>
+                            </div>
+                            <div class="icon-box bg-white bg-opacity-25 text-white rounded-3 p-3">
+                                <i class="fas fa-book-open fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="card-wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 overflow-hidden stats-card warning-card">
+                    <div class="card-body p-4 position-relative">
+                        <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                            <div>
+                                <p class="mb-1 text-dark-50 fw-medium text-dark">Chờ duyệt</p>
+                                <h3 class="fw-bold mb-0 text-dark">{{ stats.pending_orders }}</h3>
+                            </div>
+                            <div class="icon-box bg-dark bg-opacity-10 text-dark rounded-3 p-3">
+                                <i class="fas fa-clock fa-lg"></i>
+                            </div>
+                        </div>
+                        <div class="card-wave"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payments Section -->
+        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="card-header bg-white py-4 px-4 border-bottom d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning bg-opacity-10 text-warning p-2 rounded-3">
+                        <i class="fas fa-clipboard-list fa-lg"></i>
+                    </div>
+                    <h5 class="mb-0 fw-bold">Yêu cầu thanh toán mới</h5>
+                </div>
+                {% if pending_payments %}
+                    <span class="badge bg-danger rounded-pill px-3 py-2">
+                        {{ pending_payments|length }} yêu cầu cần xử lý
+                    </span>
+                {% endif %}
+            </div>
+            
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 custom-table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4 py-3 text-uppercase text-muted small fw-bold" style="width: 25%">Học viên</th>
+                                <th class="py-3 text-uppercase text-muted small fw-bold" style="width: 20%">Khóa học</th>
+                                <th class="py-3 text-uppercase text-muted small fw-bold" style="width: 15%">Số tiền</th>
+                                <th class="py-3 text-uppercase text-muted small fw-bold" style="width: 15%">Chi tiết</th>
+                                <th class="py-3 text-uppercase text-muted small fw-bold" style="width: 15%">Thời gian</th>
+                                <th class="pe-4 py-3 text-uppercase text-muted small fw-bold text-end" style="width: 10%">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payment in pending_payments %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 fw-bold">
+                                            {{ payment.user.username|slice:":1"|upper }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ payment.user.username }}</div>
+                                            <div class="small text-muted">{{ payment.user.email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">
+                                        {{ payment.course.title }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold text-success">{{ payment.amount|floatformat:0 }} ₫</div>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-column gap-1">
+                                        <div class="small fw-medium">
+                                            {% if payment.payment_method == 'momo' %}
+                                                <img src="{% static 'courses/images/momo-qr.png' %}" width="16" class="me-1"> MoMo
+                                            {% elif payment.payment_method == 'banking' %}
+                                                <i class="fas fa-university me-1 text-primary"></i> Banking
+                                            {% else %}
+                                                <i class="fas fa-money-bill me-1 text-success"></i> {{ payment.get_payment_method_display }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="small text-muted font-monospace bg-light rounded px-2 py-1 d-inline-block border" style="width: fit-content">
+                                            {{ payment.transaction_id|default:"Unknown ID" }}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small text-dark">{{ payment.created_at|date:"d/m/Y" }}</div>
+                                    <div class="small text-muted">{{ payment.created_at|date:"H:i" }}</div>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form action="{% url 'admin_approve_payment' payment.id %}" method="POST" onsubmit="return confirm('Xác nhận duyệt thanh toán cho {{ payment.user.username }}?')">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success btn-sm btn-icon" title="Duyệt">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{% url 'admin_reject_payment' payment.id %}" method="POST" onsubmit="return confirm('Từ chối thanh toán này?')">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-danger btn-sm btn-icon" title="Từ chối">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <div class="bg-light rounded-circle p-4 mb-3">
+                                            <i class="fas fa-check-circle fa-3x text-success opacity-50"></i>
+                                        </div>
+                                        <h5 class="text-muted fw-normal">Không có yêu cầu nào đang chờ xử lý</h5>
+                                        <p class="text-muted small mb-0">Tuyệt vời! Bạn đã hoàn thành hết công việc.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom styles specific to dashboard */
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+    
+    .stats-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .primary-card { background: linear-gradient(135deg, #4e73df 0%, #224abe 100%); }
+    .success-card { background: linear-gradient(135deg, #1cc88a 0%, #13855c 100%); }
+    .info-card { background: linear-gradient(135deg, #36b9cc 0%, #258391 100%); }
+    .warning-card { background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%); }
+    
+    .card-wave {
+        position: absolute;
+        bottom: -20%;
+        left: -10%;
+        width: 120%;
+        height: 50%;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        transform: rotate(-10deg);
+        pointer-events: none;
+    }
+    
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+    }
+    
+    .btn-icon:hover {
+        transform: scale(1.1);
+    }
+    
+    .custom-table tbody tr {
+        transition: background-color 0.2s;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
